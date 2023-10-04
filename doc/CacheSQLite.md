@@ -1,13 +1,13 @@
 # SQLite cache
 
-> Module: `nest/cache-sqlite`
+> Module: `nest/cache-sqlite`  
 > Requires: `node-sqlite3`
 
 The SQLite cache is based upon `node-sqlite3`. It allows, like [`nest/cache`](Cache.md) to store data for a given amount of time in a SQLite database. The database can be stored in a file or in memory.
 
 ## Usage
 
-```json
+```js
 const Cache = require('nest/cache-sqlite');
 const cache = new Cache(':memory:');             // In memory.
 const cache = new Cache('/path/to/database.db'); // In file.
