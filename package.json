@@ -1,0 +1,25 @@
+{
+  "name": "nest",
+  "version": "1.0.0",
+  "description": "A lightweight web server.",
+  "author": "Cyriaque Skrapits",
+  "license": "GNU",
+  "main": "index.js",
+  "scripts": {
+    "test": "NODE_ENV=test node test.js"
+  },
+  "exports": {
+    ".": "./index.js",
+    "./cache": "./src/modules/cache.js",
+    "./cache-sqlite": "./src/modules/cache-sqlite.js",
+    "./crypt": "./src/modules/crypt.js",
+    "./errors": "./src/errors.js",
+    "./extensions": "./src/modules/extensions.js",
+    "./helpers": "./src/modules/helpers.js",
+    "./http": "./src/modules/http.js",
+    "./requests": "./src/requests.js",
+    "./responses": "./src/responses.js",
+    "./server": "./src/server.js",
+    "./validation": "./src/modules/validation.js"
+  }
+}
