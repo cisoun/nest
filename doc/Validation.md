@@ -11,9 +11,9 @@ const PersonValidator = new Validator({
 	gender: 'in:male:female:other'
 });
 
-app.get('/') = (req, res) => {
+app.get('/', (req, res) => {
   const {name, age, gender} = PersonValidator.validate(req.json);
-}
+});
 ```
 
 ### Methods
