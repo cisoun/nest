@@ -20,11 +20,10 @@ const url   = require('url');
 
 class Response {
   constructor (code, headers, data) {
-	this.code    = code;
-	this.headers = headers;
-	this.raw     = data;
+		this.code    = code;
+		this.headers = headers;
+		this.raw     = data;
   }
-
   get json () { return JSON.parse(this.raw); }
 }
 
