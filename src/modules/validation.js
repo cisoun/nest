@@ -3,17 +3,10 @@
  * @module validation
  */
 
-const {NestError} = require('nest/errors');
+const {ValidationError} = require('nest/errors');
 
 const ARG_SEPARATOR  = ':';
 const RULE_SEPARATOR = '|';
-
-class ValidationError extends NestError {
-  constructor (errors) {
-    super(422, 'Cannot validate data of request');
-    this.errors = errors;
-  }
-}
 
 /**
  * Build an object validator.

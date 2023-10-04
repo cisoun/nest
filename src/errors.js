@@ -16,13 +16,6 @@ class NestError extends Error {
   }
 }
 
-class KeyError extends NestError {
-	constructor (key) {
-		super('key not found');
-		this.key = key;
-	}
-}
-
 class JSONError extends NestError {
 	constructor (data) {
 		super('cannot parse JSON data');
@@ -30,8 +23,14 @@ class JSONError extends NestError {
 	}
 }
 
+class ValidationError extends NestError {
+  constructor (errors) {
+    super(422, 'Cannot validate data of request');
+    this.errors = errors;
+  }
+}
+
 module.exports = {
 	JSONError,
-	KeyError,
 	NestError
 };
