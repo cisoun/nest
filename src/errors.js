@@ -32,5 +32,6 @@ class ValidationError extends NestError {
 
 module.exports = {
 	JSONError,
-	NestError
+	NestError,
+	ValidationError
 };
