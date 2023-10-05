@@ -65,7 +65,7 @@ class Server {
     this.onresponse(req, res);
   }
 
-  listen (host, port) {
+  run (host, port) {
     const now     = new Date().toISOString();
     const message = `[${now}] Server running at http://${host}:${port}`;
     this.server.listen(port, host, () => console.log(message));

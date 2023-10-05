@@ -73,7 +73,7 @@ const test_server = async () => {
 		const [name] = req.validate('name');
 		return res.text(name);
 	});
-	app.listen(HOST, PORT);
+	app.run(HOST, PORT);
 
   let response;
   response = await get('/?something');

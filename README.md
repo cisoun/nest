@@ -3,7 +3,7 @@
 ![	](doc/nest.svg)
 
 
-A lightweight web server built on top of Node with zero dependency and extensibility in mind.
+A lightweight web server built on top of Node with zero dependencies and extensibility in mind.
 
 ## Usage
 
@@ -14,7 +14,7 @@ require('nest/extensions')([
 const nest = require('nest');
 const app = nest();
 app.get('/api/hello', (req, res) => res.code(200).json({message: 'Hello!'}));
-app.listen('localhost', 3000);
+app.run('localhost', 3000);
 ```
 
 ## Built-in features
