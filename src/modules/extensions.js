@@ -59,6 +59,6 @@ function response_json () {
 	}
 }
 
-module.exports = (config = []) => {
-	config.map(c => Extensions[c]());
+module.exports = (...extensions) => {
+	extensions.map(e => Extensions[e]());
 };

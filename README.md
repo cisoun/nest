@@ -8,9 +8,9 @@ A lightweight web server built on top of Node with zero dependencies and extensi
 ## Usage
 
 ```js
-require('nest/extensions')([
+require('nest/extensions')(
   'response.json'
-]);
+);
 const nest = require('nest');
 const app = nest();
 app.get('/api/hello', (req, res) => res.code(200).json({message: 'Hello!'}));

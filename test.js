@@ -5,11 +5,11 @@ const Server     = require('nest/server');
 const http       = require('nest/http');
 const validation = require('nest/validation');
 const nest       = require('nest');
-require('nest/extensions')([
+require('nest/extensions')(
 	'request.json',
 	'request.validate',
 	'response.json'
-]);
+);
 
 const HOST = 'localhost';
 const PORT = 9000;
@@ -137,7 +137,7 @@ const test_cache_sqlite = async () => {
 const test_http = async () => {
 	const app = nest();
 	app.get('/', (req, res) => res.code(200).json({'name': 'Joe'}));
-	app.listen(HOST, PORT);
+	app.run(HOST, PORT);
 	const response = await http.unsafe(`http://${HOST}:${PORT}`);
 	assert(response.json !== undefined, 'http: no json');
 	const data = response.json;
