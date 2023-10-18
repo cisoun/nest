@@ -7,6 +7,7 @@
  *   onclose()    - Called when server has shut down.
  *   onerror()    - Called whenever an error happens during request handling.
  *   onresponse() - Called when a response has been handled and closed.
+ *   onroute()    - Called when the server is routing to the callback.
  */
 
 const http     = require('http');
@@ -37,32 +38,36 @@ class Server {
   async handler (request, response) {
     const {url, method} = request;
     const [path, query] = url.split('?', 2);
-
     // Capture and parse data.
     const buffers = [];
     for await (const chunk of request) {
       buffers.push(chunk);
     }
-
     const body = Buffer.concat(buffers).toString('utf8');
-
     // Wrap Node objects to encapsulate our data.
     const req = new Request(request, url, path, body, query);
     const res = new Response(response);
-
     // Routing.
     try {
-      if (method in this.routes && path in this.routes[method]) {
-        await this.routes[method][path](req, res);
-      } else {
-        await this.fallback(req, res);
-      }
+      await this.onroute(req, res);
     } catch (e) {
       this.onerror(req, res, e);
     }
     res.end();
-
     this.onresponse(req, res);
+  }
+
+  onclose    ()            { console.log('Closing...'); }
+  onerror    (req, res, e) { console.error(e); }
+  onresponse (req, res)    { console.log(`${req.method} ${req.url}`); }
+
+  onroute (req, res) {
+  	const {method, path} = req;
+		if (method in this.routes && path in this.routes[method]) {
+      return this.routes[method][path](req, res);
+    } else {
+      return this.fallback(req, res);
+    }
   }
 
   run (host, port) {
@@ -77,10 +82,6 @@ class Server {
     }
     this.routes = routes;
   }
-
-  onclose    ()            { console.log('Closing...'); }
-  onerror    (req, res, e) { console.error(e); }
-  onresponse (req, res)    { console.log(`${req.method} ${req.url}`); }
 }
 
 module.exports = Server;
