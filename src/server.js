@@ -27,13 +27,9 @@ class Server {
 
   fallback (req, res) { return res.code(404).text('Not found'); }
 
-  get (path, callback) {
-    return this.routes['GET'][path] = callback;
-  }
-
-  post (path, callback) {
-    return this.routes['POST'][path] = callback;
-  }
+  get  (path, callback) { return this.routes['GET'][path] = callback; }
+  post (path, callback) { return this.routes['POST'][path] = callback; }
+  put  (path, callback) { return this.routes['PUT'][path] = callback; }
 
   async handler (request, response) {
     const {url, method} = request;
