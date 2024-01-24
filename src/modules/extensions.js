@@ -24,7 +24,18 @@ const Extensions = {
 	'request.json':     request_json,
 	'request.validate': request_validate,
 	'response.json':    response_json
+	'response.html':    response_html,
+	'response.render':  response_render,
+	'statics':          statics_handler,
 };
+
+function response_html () {
+	Response.prototype.html = function (data, params={}) {
+		this.base.setHeader('Content-Type', 'text/html; charset=utf-8');
+		this.base.write(HTML.render(data, params));
+		return this;
+	}
+}
 
 function request_json () {
 	Object.defineProperty(Request.prototype, 'json', {
@@ -59,6 +70,24 @@ function response_json () {
 	}
 }
 
-module.exports = (...extensions) => {
-	extensions.map(e => Extensions[e]());
-};
+function response_render (file, params={}) {
+	response_html();
+	Response.prototype.render = async function (file, params={}) {
+		const data = await statics(`statics/${file}.html`);
+		return this.html(data, params);
+	}
+}
+
+function statics_handler () {
+	const f = Server.prototype.onroute;
+	Server.prototype.onroute = async function (req, res) {
+		if (req.method == 'GET' && req.path.startsWith('/statics')) {
+			const data = await statics(req.path.slice(1), { encoding: 'utf8' });
+			res.base.write(Buffer.from(data));
+		} else {
+			return f.call(this, req, res);
+		}
+	}
+}
+
+module.exports = (...extensions) => extensions.map(e => Extensions[e]());
