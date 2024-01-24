@@ -2,16 +2,20 @@
  * HTTP client module.
  * @module http
  *
+ * Note: since Node.js v21, you can use the Fetch API instead.
+ *
  * Usage:
- *   http.get(url, options):            shortcut for GET requests
- *   http.post(url, options):           shortcut for POST requests
- *   http.request(url, options):        generic request
+ *
+ *   http.get(url, options):            Shortcut for GET requests.
+ *   http.post(url, options):           Shortcut for POST requests.
+ *   http.request(url, options):        Generic request.
  *
  * Options:
- *   Same parameter as http.request's options but with additional attributes
  *
- *   options.data (str):                data to send
- *   options.json (bool, default=true): send data as JSON (true)
+ *   Same parameter as http.request's options but with additional attributes.
+ *
+ *   options.data (str):                Data to send.
+ *   options.json (bool, default=true): Send data as JSON.
  */
 
 const http  = require('http');
@@ -19,12 +23,12 @@ const https = require('https');
 const url   = require('url');
 
 class Response {
-  constructor (code, headers, data) {
+	constructor (code, headers, data) {
 		this.code    = code;
 		this.headers = headers;
 		this.raw     = data;
-  }
-  get json () { return JSON.parse(this.raw); }
+	}
+	get json () { return JSON.parse(this.raw); }
 }
 
 const basicAuth = (user, pass) => user + ':' + pass;
@@ -38,14 +42,14 @@ const basicAuth = (user, pass) => user + ':' + pass;
  * @throws  {*}                See `request`.
  */
 const get = async (url, options = {}) => {
-  options.method = 'GET';
-  return await request(url, options);
+	options.method = 'GET';
+	return await request(url, options);
 };
 
 const handleData = (options) => options.data || '';
 
 const handleResponse = (response, data) => {
-  return new Response(response.statusCode, response.headers, data.join(''));
+	return new Response(response.statusCode, response.headers, data.join(''));
 }
 
 /**
@@ -57,8 +61,8 @@ const handleResponse = (response, data) => {
  * @throws  {*}                See `request`.
  */
 const post = async (url, options = {}) => {
-  options.method = 'POST';
-  return await request(url, options);
+	options.method = 'POST';
+	return await request(url, options);
 }
 
 /**
@@ -75,45 +79,45 @@ const post = async (url, options = {}) => {
  * @throws  {UnreachableHostError}   Host is unreachable.
  */
 const request = (url, options = {}, handler = https) => {
-  transformRequest(options);
-  return new Promise((resolve, reject) => {
-	const request = handler.request(url, options, res => {
-	  const data = [];
-	  res.setEncoding('utf8');
-	  res.on('data', d => data.push(d));
-	  res.on('end', () => resolve(handleResponse(res, data)));
+	transformRequest(options);
+	return new Promise((resolve, reject) => {
+		handler.request(url, options, res => {
+			const data = [];
+			res.setEncoding('utf8');
+			res.on('data', d => data.push(d));
+			res.on('end', () => resolve(handleResponse(res, data)));
+		})
+		.on('error', error => reject(error))
+		.end(handleData(options));
+	}).catch(e => {
+		switch (e.code) {
+			case 'ENOTFOUND': throw new Error('cannot reach host (' + url + ')');
+			default:          throw e;
+		}
 	});
-	request.on('error', error => reject(error));
-	request.end(handleData(options));
-  }).catch(e => {
-	switch (e.code) {
-	  case 'ENOTFOUND': throw new Error('cannot reach host (' + url + ')');
-	  default:          throw e;
-	}
-  });
 };
 
 const transformRequest = (options = {}) => {
-  options.headers                   = options.headers || {};
-  options.headers['Content-Length'] = 0;
-  if (options.data !== undefined) {
-	if (typeof options.data === 'object') {
-	  options.data   = JSON.stringify(options.data);
-	  options.json ??= true;
-	  if (options.json) {
-		options.headers['Content-Type'] = 'application/json';
-	  }
+	options.headers                   = options.headers || {};
+	options.headers['Content-Length'] = 0;
+	if (options.data !== undefined) {
+		if (typeof options.data === 'object') {
+			options.data   = JSON.stringify(options.data);
+			options.json ??= true; // Make it true by default.
+			if (options.json) {
+				options.headers['Content-Type'] = 'application/json';
+			}
+		}
+		options.headers['Content-Length'] = options.data.length;
 	}
-	options.headers['Content-Length'] = options.data.length;
-  }
 }
 
 const unsafe = (url, options) => request(url, options, http);
 
 module.exports = {
-  basicAuth,
-  get,
-  post,
-  request,
-  unsafe
+	basicAuth,
+	get,
+	post,
+	request,
+	unsafe
 };
