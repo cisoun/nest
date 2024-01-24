@@ -23,8 +23,9 @@ const RULE_SEPARATOR = '|';
  * @returns {function)   Instance of validator.
  */
 function Validator (rules) {
-  this.decoder  = decode(rules);
-  this.validate = (data) => validate(this, data);
+	this.decoder  = decode(rules);
+	this.rules    = rules;
+	this.validate = (data) => validate(this, data);
 }
 
 /**
@@ -32,43 +33,50 @@ function Validator (rules) {
  *
  * Extend this object to add more rules.
  * A rule (function) must at least provide:
- *  - data:
+ *  - data:    object to validate.
+ *  - key:     key of the value to validate.
+ *  - value:   value to validate.
+ *  - ...args: rules arguments.
  */
 const Rules = {
-  between: (data, key, value, min, max) => {
-    if (value < min || value > max) {
-      return `must be between ${min} and ${max}`;
-    }
-  },
+	between: (data, key, value, min, max) => {
+		if (value < min || value > max) {
+			return `must be between ${min} and ${max}`;
+		}
+	},
 
-  in: (data, key, value, ...array) => {
-    if (!array.includes(value)) {
-      return 'not in [' + array.join(', ') + ']';
-    }
-  },
 
-  number: (data, key, value) => {
-    if (!(typeof value === 'number')) {
-      return `must be a number`;
-    }
-  },
 
-  required: (data, key, value) => {
-    if (!value || value === undefined) {
-      return `required`;
-    }
-  },
+	in: (data, key, value, ...array) => {
+		if (!array.includes(value)) {
+			return 'not in [' + array.join(', ') + ']';
+		}
+	},
 
-  requiredif: (data, key, value, ref = '', condition = '', refValue = '') => {
-    switch (condition) {
-      case 'is':
-        return ref in data &&
-               data[ref].toString() == refValue &&
-               !(key in data) ?
-          `required if ${ref} is ${refValue}` : undefined;
-    }
-    return `wrong condition: "${ref} ${condition} ${refValue}`;
-  }
+	number: (data, key, value) => {
+		const v = Number(value);
+		if (isNaN(v)) {
+			return `must be a number`;
+		}
+		data[key] = v;
+	},
+
+	required: (data, key, value) => {
+		if (value === undefined) {
+			return `required`;
+		}
+	},
+
+	requiredif: (data, key, value, ref = '', condition = '', refValue = '') => {
+		switch (condition) {
+			case 'is':
+				return ref in data &&
+					data[ref].toString() == refValue &&
+					!(key in data) ?
+					`required if ${ref} is ${refValue}` : undefined;
+		}
+		return `wrong condition: "${ref} ${condition} ${refValue}`;
+	}
 };
 
 /**
@@ -78,16 +86,16 @@ const Rules = {
  * @returns {Array}          Array of operations for each rule.
  */
 const decode = (rules) => {
-  /* Tricky operation.
-   * For
-   *   {'name': 'callback1:arg1:arg2|callback2:arg1:arg2'}
-   * Should return something like this:
-   *   [ ['name', [callback1, arg1, arg2], [callback2, arg1, arg2] ] ]
-   */
-  return Object.entries(rules)
-    .map(([k, v])    => [k, ...v.split(RULE_SEPARATOR)
-    .map((r)         => r.split(ARG_SEPARATOR))
-    .map(([a, ...b]) => [Rules[a], ...b])]);
+	/* Tricky operation.
+	 * For
+	 *   {'name': 'callback1:arg1:arg2|callback2:arg1:arg2'}
+	 * Should return something like this:
+	 *   [ ['name', [callback1, arg1, arg2], [callback2, arg1, arg2] ] ]
+	 */
+	return Object.entries(rules)
+		.map(([k, v])    => [k, ...v.split(RULE_SEPARATOR)
+		.map((r)         => r.split(ARG_SEPARATOR))
+		.map(([a, ...b]) => [Rules[a], ...b])]);
 };
 
 /**
@@ -98,24 +106,24 @@ const decode = (rules) => {
  * @returns {Object}                Validated data.
  * @throws  {ValidationError}       Validation errors.
  */
-const validate = (validator, data) => {
-  const errors = {};
-    for (const [key, ...callbacks] of validator.decoder) {
-      const messages = [];
-      for (const [callback, ...args] of callbacks) {
-        const error = callback(data, key, data[key], ...args);
-        if (error) {
-          messages.push(error);
-        }
-      }
-      if (messages.length) {
-        errors[key] = messages;
-      }
-    }
-    if (Object.keys(errors).length) {
-      throw new ValidationError(errors);
-    }
-    return data;
+function validate (validator, data) {
+	const errors = {};
+		for (const [key, ...callbacks] of validator.decoder) {
+			const messages = [];
+			for (const [callback, ...args] of callbacks) {
+				const error = callback(data, key, data[key], ...args);
+				if (error) {
+					messages.push(error);
+				}
+			}
+			if (messages.length) {
+				errors[key] = messages;
+			}
+		}
+		if (Object.keys(errors).length) {
+			throw new ValidationError(errors);
+		}
+		return data;
 }
 
 /**
@@ -129,22 +137,25 @@ const validate = (validator, data) => {
  * @throws  {ValidationError} Thrown if some parameters are missing.
  * @returns {Array}           Array containing needed parameters.
  */
-const validateKeys = (data, keys) => {
-  if (!(data instanceof Object)) {
-    throw new ValidationError(keys);
-  }
-  const e = [];
-  for (const key of keys) {
-    if (!data.hasOwnProperty(key) ||
-        data[key] == undefined ||
-        data[key] == null) {
-      e.push(key);
-    }
-  }
-  if (e.length) {
-    throw new ValidationError(e);
-  }
-  return keys.map(e => data[e]); // Return needed data.
+function validateKeys (data, keys) {
+	// NOTE: Could be done by using validateObject but this way is faster.
+	if (!(data instanceof Object)) {
+		const errors = Object.fromEntries(keys.map(i => [i, ['required']]));
+		throw new ValidationError(errors);
+	}
+	const e = [];
+	for (const key of keys) {
+		if (!data.hasOwnProperty(key) ||
+			data[key] == undefined ||
+			data[key] == null) {
+			e.push(key);
+		}
+	}
+	if (e.length) {
+		const errors = Object.fromEntries(e.map(i => [i, ['required']]));
+		throw new ValidationError(errors);
+	}
+	return keys.map(e => data[e]); // Return needed data.
 }
 
 /**
@@ -167,13 +178,15 @@ const validateKeys = (data, keys) => {
  * @thrown {ValidationError} Thrown if the validation has failed.
  * @return {Object}          Object provided.
  */
-const validateObject = (data, rules) => (new Validator(rules)).validate(data);
+function validateObject (data, rules) {
+	return (new Validator(rules)).validate(data);
+}
 
 module.exports = {
-  validate,
-  validateKeys,
-  validateObject,
-  Rules,
-  Validator,
-  ValidationError
+	validate,
+	validateKeys,
+	validateObject,
+	Rules,
+	Validator,
+	ValidationError
 };

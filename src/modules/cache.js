@@ -17,7 +17,7 @@
  *   Dump cache:       const data = cache.dump();
  */
 
-const {now}      = require('nest/helpers');
+const {now} = require('nest/helpers');
 
 // Default time to live.
 const DEFAULT_TTL = 3600;
