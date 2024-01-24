@@ -16,18 +16,27 @@
  *   response.json: Allow a response to send JSON data.
  */
 
+const HTML        = require('nest/html');
 const Request     = require('nest/requests');
 const Response    = require('nest/responses');
+const Server      = require('nest/server');
 const {JSONError} = require('nest/errors');
+const {statics}   = require('nest/helpers');
 
 const Extensions = {
+	'json':             json,
 	'request.json':     request_json,
 	'request.validate': request_validate,
-	'response.json':    response_json
 	'response.html':    response_html,
+	'response.json':    response_json,
 	'response.render':  response_render,
 	'statics':          statics_handler,
 };
+
+function json () {
+	request_json();
+	response_json();
+}
 
 function response_html () {
 	Response.prototype.html = function (data, params={}) {
