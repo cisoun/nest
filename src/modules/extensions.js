@@ -6,14 +6,32 @@
  *
  * Usage:
  *
- *   require('nest/extensions')([
- *     'response.json'
- *   ]);
+ *   require('nest/extensions')(
+ *     'response.json',
+ *     'statics'
+ *   );
  *
  * Extensions:
  *
- *   request.json:  Get the JSON data of a request.
- *   response.json: Allow a response to send JSON data.
+ *   json:            Add JSON support for requests and responses.
+ *                    Will load: request.json, response.json
+ *
+ *   request.json:    Get the JSON data of a request.
+ *                    On JSON decoding error, throws: JSONError (HTTP 422).
+ *                    E.g.: const data = req.json;
+ *
+ *   response.html:   Allow a resopnse to send HTML code.
+ *                    E.g.: res.html('<div>Hello</div>');
+ *
+ *   response.json:   Allow a response to send JSON data.
+ *                    E.g.: res.json({hello: 'world'});
+ *
+ *   response.render: Allow a response to render and serve an HTML static file.
+ *                    Will load: response.html
+ *                    E.g.: res.render('index', {version: '1.0'});
+ *
+ *   statics:         Allow the server to serve static files through GET
+ *                    requests with URLs starting by `/statics`.
  */
 
 const HTML        = require('nest/html');
@@ -48,12 +66,9 @@ function response_html () {
 
 function request_json () {
 	Object.defineProperty(Request.prototype, 'json', {
-	  	get: function () {
+		get: function () {
 			try {
-				if (!this._json) {
-					this._json = JSON.parse(this.body.trim());
-				}
-				return this._json;
+				return JSON.parse(this.body.trim());
 				} catch (e) {
 				if (e instanceof SyntaxError) {
 					throw new JSONError(this.body);
@@ -61,7 +76,7 @@ function request_json () {
 					throw e;
 				}
 			}
-	 	}
+		}
 	});
 }
 
