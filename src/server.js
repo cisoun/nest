@@ -3,11 +3,21 @@
  * @module server
  *
  * Overridables:
- *   fallback()   - Called when no route has been found.
- *   onclose()    - Called when server has shut down.
- *   onerror()    - Called whenever an error happens during request handling.
- *   onresponse() - Called when a response has been handled and closed.
- *   onroute()    - Called when the server is routing to the callback.
+ *
+ *   fallback(req, res)
+ *     Called when no route has been found.
+ *
+ *   onclose()
+ *     Called when server has shut down.
+ *
+ *   onerror(req, res, e)
+ *     Called whenever an error happens during request handling.
+ *
+ *   onresponse(req, res)
+ *     Called when a response has been handled and closed.
+ *
+ *   onroute(req, res)
+ *     Called when the server is routing to the callback.
  */
 
 const http     = require('http');
@@ -52,6 +62,10 @@ class Server {
     res.end();
     this.onresponse(req, res);
   }
+	on (event, callback) {
+		this[`on${event}`] = callback;
+		return this;
+	}
 
   onclose    ()            { console.log('Closing...'); }
   onerror    (req, res, e) { console.error(e); }
