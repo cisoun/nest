@@ -18,14 +18,14 @@ class NestError extends Error {
 
 class JSONError extends NestError {
 	constructor (data) {
-		super('cannot parse JSON data');
+		super(422, 'cannot parse JSON data');
 		this.data = data;
 	}
 }
 
 class ValidationError extends NestError {
   constructor (errors) {
-    super(422, 'Cannot validate data of request');
+    super(422, 'cannot validate request');
     this.errors = errors;
   }
 }
