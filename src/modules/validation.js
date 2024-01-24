@@ -45,7 +45,14 @@ const Rules = {
 		}
 	},
 
+	default: (data, key, value, type = String) => {
+		if (data[key] == null) {
+			data[key] = type(value);
+		}
+	},
 
+	defaultBool: (d, k, v) => Rules.default(d, k, v, Boolean),
+	defaultInt:  (d, k, v) => Rules.default(d, k, v, Number),
 
 	in: (data, key, value, ...array) => {
 		if (!array.includes(value)) {
