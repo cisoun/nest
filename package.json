@@ -16,6 +16,7 @@
     "./errors": "./src/errors.js",
     "./extensions": "./src/modules/extensions.js",
     "./helpers": "./src/modules/helpers.js",
+    "./html": "./src/modules/html.js",
     "./http": "./src/modules/http.js",
     "./requests": "./src/requests.js",
     "./responses": "./src/responses.js",
