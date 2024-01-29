@@ -1,4 +1,9 @@
 /**
+ * Errors module.
+ * @module errors
+ */
+
+/**
  * A managed error response that can be extended.
  * @class NestError
  */

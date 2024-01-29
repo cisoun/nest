@@ -13,6 +13,7 @@ require('nest/extensions')(
 );
 const nest = require('nest');
 const app = nest();
+app.on('error', (req, res, e) => console.error(`Error: ${e}`));
 app.get('/api/hello', (req, res) => res.code(200).json({message: 'Hello!'}));
 app.run('localhost', 3000);
 ```
@@ -22,9 +23,13 @@ app.run('localhost', 3000);
  - Data caching ([nest/cache](doc/Cache.md))
  - Cryptography utilities ([nest/crypt](doc/Crypt.md))
  - Extensions ([nest/extensions](doc/Extensions.md))
+ - HTML templating engine ([nest/html](doc/HTML.md))
  - HTTP client ([nest/http](doc/HTTP.md))
  - Data validation ([nest/validation](doc/Validation.md))
 
-Optional:
+### Optional
+
+> These modules require external dependencies that must be installed manually in order to use them.
+> Please read their documentation to know which module is required.
 
 - SQLite based data caching ([nest/cache-sqlite](doc/CacheSQLite.md))

@@ -2,6 +2,8 @@
 
 > Module: `nest/http`
 
+> **Note: since Node.js v21, you can use the Fetch API instead.**
+
 HTTP client module. Similar to Axios.
 
 Requests are by default sent over HTTPS. For HTTP, use the `unsafe` call.
