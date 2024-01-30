@@ -6,7 +6,7 @@ HTML templating engine.
 
 ## Features
 
-- Pass data to HTML
+- Pass data to HTML.
 
 ## Usage
 
@@ -19,6 +19,6 @@ html.render('<p>My name is {{name}}.</p>', {name: 'Joe'});
 
 ## Methods
 
-| Methods                   | Description           |
-| ------------------------- | --------------------- |
-| `render(html, params={})` | Render and HTML code. |
+| Methods                   | Description          |
+| ------------------------- | -------------------- |
+| `render(html, params={})` | Render an HTML code. |
