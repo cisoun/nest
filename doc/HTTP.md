@@ -12,22 +12,29 @@ Requests are by default sent over HTTPS. For HTTP, use the `unsafe` call.
 
 ```js
 const http = require('nest/http');
-const response = await http.get('https://example.com/json');
-const response = await http.post('https//...', {
+await http.get('https://example.com/json');
+await http.post('https//...', {
   headers: {authorization: 'Basic hello:world'},
   data:    {hello: 'World'}
 });
-console.log(response.code, response.json);
+await http.request({
+  method: 'POST',
+  host:   'example.com',
+  path:   '/api',
+  data:   {name: 'Joe'}
+}).then(response => {
+  console.log(response.code, response.json);
+});
 ```
 
 ## Methods
 
-| Methods                 | Description                                                 |
-| ----------------------- | ----------------------------------------------------------- |
-| `get(url, options)`     | Performs a GET request. Returns a `Response`.               |
-| `post(url, options)`    | Performs a POST request. Returns a `Response`.              |
-| `request(url, options)` | Performs a generic request. Returns a `Response`.           |
-| `unsafe(url, options)`  | Performs a generic request over HTTP. Returns a `Response`. |
+| Methods              | Description                                                  |
+| -------------------- | ------------------------------------------------------------ |
+| `get(url, options)`  | Performs a GET request. Returns a `Response`.                |
+| `post(url, options)` | Performs a POST request. Returns a `Response`.               |
+| `request(options)`   | Performs a generic request like `fetch`. Returns a `Response`. |
+| `unsafe(options)`    | Performs a generic request over HTTP. Returns a `Response`.  |
 
 ## Response
 
