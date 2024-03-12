@@ -106,7 +106,7 @@ function statics_handler () {
 	const f = Server.prototype.onroute;
 	Server.prototype.onroute = async function (req, res) {
 		if (req.method == 'GET' && req.path.startsWith('/statics')) {
-			const data = await statics(req.path.slice(1), { encoding: 'utf8' });
+			const data = await statics(req.path.slice(1));
 			res.base.write(Buffer.from(data));
 		} else {
 			return f.call(this, req, res);
