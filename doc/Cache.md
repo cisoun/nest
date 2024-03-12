@@ -19,5 +19,5 @@ cache.set('mykey', 'myValue');
 | `dump()` | Returns all data in cache. |
 | `get(key)`                  | Returns the value of a key. If key doesn't exist or is expired, returns `undefined`. |
 | `has(key)` | Returns `true` if a key exists, or `false`. |
-| `set(key, value, ttl=3600)` | Store a key with a given value. TTL is in seconds, 0 will store the key for infinity. |
+| `set(key, value, ttl=3600)` | Store a key with a given value. TTL is in seconds, 0 will store the key infinitely. |
 | `unset(key)` | Delete a key from cache. |

@@ -7,7 +7,7 @@ Nest provides built-in extensions and a way to create your owns.
 ```js
 require('nest/extensions')(
   'request.json',
-  'response.json',
+  'response.json'
 )
 ```
 
@@ -37,10 +37,10 @@ Let's say you have `/statics/about.html` with the following content:
 You can transform and return the page this way:
 
 ```js
-app.get('/about') = (req, res) => res.render('about', {name: 'Geroges'});
+app.get('/about') = (req, res) => res.render('about', {name: 'John'});
 ```
 
-The `name` field of the HTML page will be replaced by "Georges".
+The `name` field of the HTML page will be replaced by "John".
 
 ### statics
 

@@ -6,7 +6,7 @@
 
 ```js
 app.get('/', (req, res) => {
-  // Use `req` here.
+  const {name} = req.json;
 });
 ```
 

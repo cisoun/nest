@@ -6,7 +6,7 @@
 
 ```js
 app.get('/', (req, res) => {
-  // Use `res` here.
+	res.code(200).text('Here some text.');
 });
 ```
 
@@ -18,9 +18,13 @@ app.get('/', (req, res) => {
 
 ## Methods
 
+All methods can be chained.
+
+> **Warning**: if `code()` is used (as you should), use it first!
+
 | Method       | Description                                                  |
 | ------------ | ------------------------------------------------------------ |
-| `code(code)` | Defines a HTTP status code. **If called, must be put at first!** |
-| `end()`      | Sends the response. It is usually not necessary to call it.  |
+| `code(code)` | Defines a HTTP status code.                                  |
+| `end()`      | Sends the response. Usually not necessary to call as the server already handles it. |
 | `json(data)` | Sends a JSON data. Available through the `response.json` [extension](Extensions.md). |
 | `text(text)` | Defines a text to send.                                      |
