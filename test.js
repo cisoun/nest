@@ -25,10 +25,6 @@ Server.prototype.onresponse = function (req, res) {
   console.log(`[${date}] ${statusCode} ${method} ${url} ${body}`);
 }
 
-Server.prototype.onerror = function (req, res, e) {
-	res.code(422).json({error: e});
-}
-
 const assert = (assertion, message) => {
 	console.assert(assertion, message);
 	if (!assertion) {
@@ -77,13 +73,13 @@ const test_server = async () => {
 
   let response;
   response = await get('/?something');
-  assert(response.code == 404, 'server: short query')
+  assert(response.status == 404, 'server: short query')
   response = await get('/hello', 'test');
-  assert(response.code == 200 && response.raw == 'hello', 'server: hello');
+  assert(response.status == 200 && response.raw == 'hello', 'server: hello');
   response = await post('/name', 'Joe');
-  assert(response.code == 422, 'server: name (text data)')
+  assert(response.status == 422, 'server: name (text data)')
   response = await post('/name', {name: 'Joe'});
-  assert(response.code == 200 && response.raw == 'Joe', 'server: name (json data)');
+  assert(response.status == 200 && response.raw == 'Joe', 'server: name (json data)');
   app.close();
 };
 
