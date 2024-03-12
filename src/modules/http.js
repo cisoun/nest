@@ -42,8 +42,10 @@ const basicAuth = (user, pass) => user + ':' + pass;
  * @throws  {*}                See `request`.
  */
 const get = async (url, options = {}) => {
-	options.method = 'GET';
-	return await request(url, options);
+	const index = url.indexOf('/');
+	options.host = url.slice(0, index);
+	options.path = url.slice(index);
+	return await request(options);
 };
 
 const handleData = (options) => options.data || '';
@@ -62,7 +64,7 @@ const handleResponse = (response, data) => {
  */
 const post = async (url, options = {}) => {
 	options.method = 'POST';
-	return await request(url, options);
+	return await get(url, options);
 }
 
 /**
@@ -78,28 +80,24 @@ const post = async (url, options = {}) => {
  * @returns {object}                 Response as object.
  * @throws  {UnreachableHostError}   Host is unreachable.
  */
-const request = (url, options = {}, handler = https) => {
+const request = (options = {}, handler = https) => {
 	transformRequest(options);
 	return new Promise((resolve, reject) => {
-		handler.request(url, options, res => {
+		handler.request(options, res => {
 			const data = [];
 			res.setEncoding('utf8');
 			res.on('data', d => data.push(d));
-			res.on('end', () => resolve(handleResponse(res, data)));
+			res.on('end',  _ => resolve(handleResponse(res, data)));
 		})
 		.on('error', error => reject(error))
 		.end(handleData(options));
-	}).catch(e => {
-		switch (e.code) {
-			case 'ENOTFOUND': throw new Error('cannot reach host (' + url + ')');
-			default:          throw e;
-		}
 	});
 };
 
 const transformRequest = (options = {}) => {
-	options.headers                   = options.headers || {};
-	options.headers['Content-Length'] = 0;
+	options.method                    ??= 'GET';
+	options.headers                   ??= {};
+	options.headers['Content-Length']   = 0;
 	if (options.data !== undefined) {
 		if (typeof options.data === 'object') {
 			options.data   = JSON.stringify(options.data);
@@ -112,7 +110,7 @@ const transformRequest = (options = {}) => {
 	}
 }
 
-const unsafe = (url, options) => request(url, options, http);
+const unsafe = (options) => request(options, http);
 
 module.exports = {
 	basicAuth,

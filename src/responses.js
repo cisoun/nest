@@ -23,7 +23,7 @@ class Response {
     return this;
   }
 
-  get statusCode () { return this.base.statusCode; }
+	get status () { return this.base.statusCode; }
 }
 
 module.exports = Response;

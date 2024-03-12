@@ -5,9 +5,9 @@
 ## Usage
 
 ```js
-app.get('/') = (req, res) => {
+app.get('/', (req, res) => {
   // Use `req` here.
-}
+});
 ```
 
 ## Properties

@@ -5,10 +5,16 @@
 ## Usage
 
 ```js
-app.get('/') = (req, res) => {
+app.get('/', (req, res) => {
   // Use `res` here.
-}
+});
 ```
+
+## Properties
+
+| Property | Description                   |
+| -------- | ----------------------------- |
+| `status` | Returns the HTTP status code. |
 
 ## Methods
 
