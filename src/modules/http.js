@@ -23,8 +23,8 @@ const https = require('https');
 const url   = require('url');
 
 class Response {
-	constructor (code, headers, data) {
-		this.code    = code;
+	constructor (status, headers, data) {
+		this.status  = status;
 		this.headers = headers;
 		this.raw     = data;
 	}
