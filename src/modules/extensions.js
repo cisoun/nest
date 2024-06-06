@@ -42,19 +42,11 @@ const {JSONError} = require('nest/errors');
 const {statics}   = require('nest/helpers');
 
 const Extensions = {
-	'json':             json,
-	'request.json':     request_json,
 	'request.validate': request_validate,
 	'response.html':    response_html,
-	'response.json':    response_json,
 	'response.render':  response_render,
 	'statics':          statics_handler,
 };
-
-function json () {
-	request_json();
-	response_json();
-}
 
 function response_html () {
 	Response.prototype.html = function (data, params={}) {
@@ -64,33 +56,9 @@ function response_html () {
 	}
 }
 
-function request_json () {
-	Object.defineProperty(Request.prototype, 'json', {
-		get: function () {
-			try {
-				return JSON.parse(this.body.trim());
-				} catch (e) {
-				if (e instanceof SyntaxError) {
-					throw new JSONError(this.body);
-				} else {
-					throw e;
-				}
-			}
-		}
-	});
-}
-
 function request_validate () {
 	Request.prototype.validate = function (rules) {
-		return validateObject(this.json, rules);
-	}
-}
-
-function response_json () {
-	Response.prototype.json = function (data) {
-		this.base.setHeader('Content-Type', 'application/json');
-		this.base.write(JSON.stringify(data));
-		return this;
+		return validation.validateObject(this.json, rules);
 	}
 }
 

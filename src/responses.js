@@ -8,12 +8,18 @@ class Response {
 		this.base = response;
 	}
 
+	code (code) {
+		this.base.statusCode = code;
+		return this;
+	}
+
 	end () {
 		this.base.end();
 	}
 
-	code (code) {
-		this.base.statusCode = code;
+	json (data) {
+		this.base.setHeader('Content-Type', 'application/json');
+		this.base.write(JSON.stringify(data));
 		return this;
 	}
 
