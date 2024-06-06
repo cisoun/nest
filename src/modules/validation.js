@@ -61,11 +61,9 @@ const Rules = {
 	},
 
 	number: (data, key, value) => {
-		const v = Number(value);
-		if (isNaN(v)) {
+		if (typeof value !== 'number' || Number.isNaN(value)) {
 			return `must be a number`;
 		}
-		data[key] = v;
 	},
 
 	required: (data, key, value) => {
