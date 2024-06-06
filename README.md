@@ -3,14 +3,13 @@
 ![	](doc/nest.svg)
 
 
-A lightweight web server built on top of Node with zero dependencies and extensibility in mind.
+A lightweight web server built on top of Node.js with zero dependencies and extensibility in mind.
 
 ## Usage
 
 ```js
 const nest = require('nest');
 const app = nest();
-app.on('error', (req, res, e) => console.error(`Error: ${e}`));
 app.get('/api/hello', (req, res) => res.code(200).json({message: 'Hello!'}));
 app.run('localhost', 3000);
 ```
@@ -32,3 +31,7 @@ app.run('localhost', 3000);
 > Please read their documentation to know which module is required.
 
 - SQLite based data caching ([nest/cache-sqlite](doc/CacheSQLite.md))
+
+## License
+
+Nest is distributed under GNU General Public License version 3. See [LICENSE](LICENSE).
