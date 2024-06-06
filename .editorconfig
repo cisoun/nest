@@ -1,5 +1,5 @@
 root = true
 
-[*.js]
+[**.js]
 indent_style = tab
 indent_size = 2
