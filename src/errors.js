@@ -14,10 +14,9 @@ class NestError extends Error {
    * @param {string}  [message=null] - Message of the error.
    */
   constructor (code = 400, message = null) {
-    super();
+    super(message);
     this.name    = this.constructor.name;
     this.code    = code;
-    this.message = message;
   }
 }
 
