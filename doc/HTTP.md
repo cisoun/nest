@@ -63,4 +63,4 @@ Additionnal parameters provided by Nest:
 | `status`  | HTTP status code.                       |
 | `headers` | Headers sent by the server.             |
 | `json`    | JSON response (if correctly formatted). |
-| `raw`     | Body of the response.                   |
+| `body`    | Body of the response.                   |

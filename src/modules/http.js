@@ -20,15 +20,14 @@
 
 const http  = require('http');
 const https = require('https');
-const url   = require('url');
 
 class Response {
 	constructor (status, headers, data) {
 		this.status  = status;
 		this.headers = headers;
-		this.raw     = data;
+		this.body    = data;
 	}
-	get json () { return JSON.parse(this.raw); }
+	get json () { return JSON.parse(this.body); }
 }
 
 const basicAuth = (user, pass) => user + ':' + pass;
@@ -42,7 +41,7 @@ const basicAuth = (user, pass) => user + ':' + pass;
  * @throws  {*}                See `request`.
  */
 const get = async (url, options = {}) => {
-	const index = url.indexOf('/');
+	const index  = url.indexOf('/');
 	options.host = url.slice(0, index);
 	options.path = url.slice(index);
 	return await request(options);
@@ -51,7 +50,11 @@ const get = async (url, options = {}) => {
 const handleData = (options) => options.data || '';
 
 const handleResponse = (response, data) => {
-	return new Response(response.statusCode, response.headers, data.join(''));
+	return new Response(
+		response.statusCode,
+		response.headers,
+		Buffer.concat(data)
+	);
 }
 
 /**
@@ -68,7 +71,7 @@ const post = async (url, options = {}) => {
 }
 
 /**
- * Do a HTTP(S) request.
+ * Do a HTTPS request.
  *
  * Options: https://nodejs.org/api/http.html#http_http_request_options_callback
  *
@@ -85,9 +88,8 @@ const request = (options = {}, handler = https) => {
 	return new Promise((resolve, reject) => {
 		handler.request(options, res => {
 			const data = [];
-			res.setEncoding('utf8');
-			res.on('data', d => data.push(d));
-			res.on('end',  _ => resolve(handleResponse(res, data)));
+			res.on('data', (chunk) => data.push(chunk));
+			res.on('end',  ()      => resolve(handleResponse(res, data)));
 		})
 		.on('error', error => reject(error))
 		.end(handleData(options));
@@ -103,13 +105,19 @@ const transformRequest = (options = {}) => {
 			options.data   = JSON.stringify(options.data);
 			options.json ??= true; // Make it true by default.
 			if (options.json) {
-				options.headers['Content-Type'] = 'application/json';
+				options.headers['Content-Type'] = 'application/json; charset=utf-8';
 			}
 		}
 		options.headers['Content-Length'] = options.data.length;
 	}
 }
 
+/**
+ * Do a HTTP request.
+ *
+ * Same call as `request` but use node's http module instead to perform
+ * insecure HTTP calls.
+ */
 const unsafe = (options) => request(options, http);
 
 module.exports = {
@@ -117,5 +125,6 @@ module.exports = {
 	get,
 	post,
 	request,
-	unsafe
+	Response,
+	unsafe,
 };
