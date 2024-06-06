@@ -28,6 +28,7 @@ class Response {
 		this.body    = data;
 	}
 	get json () { return JSON.parse(this.body); }
+	get text () { return this.body.toString('utf8'); }
 }
 
 const basicAuth = (user, pass) => user + ':' + pass;
@@ -92,7 +93,7 @@ const request = (options = {}, handler = https) => {
 			res.on('end',  ()      => resolve(handleResponse(res, data)));
 		})
 		.on('error', error => reject(error))
-		.end(handleData(options));
+		.end(Buffer.from(handleData(options)));
 	});
 };
 
@@ -108,7 +109,7 @@ const transformRequest = (options = {}) => {
 				options.headers['Content-Type'] = 'application/json; charset=utf-8';
 			}
 		}
-		options.headers['Content-Length'] = options.data.length;
+		options.headers['Content-Length'] = Buffer.from(options.data).length;
 	}
 }
 
