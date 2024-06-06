@@ -12,7 +12,7 @@
     ".": "./index.js",
     "./cache": "./src/modules/cache.js",
     "./cache-sqlite": "./src/modules/cache-sqlite.js",
-    "./crypt": "./src/modules/crypt.js",
+    "./crypto": "./src/modules/crypto.js",
     "./errors": "./src/errors.js",
     "./extensions": "./src/modules/extensions.js",
     "./helpers": "./src/modules/helpers.js",

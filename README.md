@@ -21,7 +21,7 @@ app.run('localhost', 3000);
 ## Built-in features
 
  - Data caching ([nest/cache](doc/Cache.md))
- - Cryptography utilities ([nest/crypt](doc/Crypt.md))
+ - Cryptography utilities ([nest/crypto](doc/Crypto.md))
  - Extensions ([nest/extensions](doc/Extensions.md))
  - HTML templating engine ([nest/html](doc/HTML.md))
  - HTTP client ([nest/http](doc/HTTP.md))
