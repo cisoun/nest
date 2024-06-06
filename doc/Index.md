@@ -12,3 +12,4 @@
 | [http](HTTP.md)                | HTTP client.            |
 | utils                          | Utilities.              |
 | [validation](Validation.md)    | Validation utilities.   |
+| [websocket](WebSocket.md)      | WebSocket server.       |

@@ -21,6 +21,7 @@
     "./requests": "./src/requests.js",
     "./responses": "./src/responses.js",
     "./server": "./src/server.js",
-    "./validation": "./src/modules/validation.js"
+    "./validation": "./src/modules/validation.js",
+    "./websocket": "./src/modules/websocket.js"
   }
 }

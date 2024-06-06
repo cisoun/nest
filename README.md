@@ -26,6 +26,7 @@ app.run('localhost', 3000);
  - HTML templating engine ([nest/html](doc/HTML.md))
  - HTTP client ([nest/http](doc/HTTP.md))
  - Data validation ([nest/validation](doc/Validation.md))
+ - WebSocket server ([nest/websocket](doc/WebSocket.md))
 
 ### Optional
 
