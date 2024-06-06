@@ -2,65 +2,80 @@
  * Internal server.
  * @module server
  *
- * Overridables:
+ * Usage:
  *
- *   fallback(req, res)
- *     Called when no route has been found.
+ *   const nest = require('nest');
  *
- *   onclose()
- *     Called when server has shut down.
+ *   // Initialize without routes definition.
+ *   const app = nest();
  *
- *   onerror(req, res, e)
- *     Called whenever an error happens during request handling.
+ *   // Initialize with routes definition.
+ *   const app = nest({
+ *     'GET': {
+ *       '/': (req, res) => { res.text('hello'); }
+ *     }
+ *   });
  *
- *   onresponse(req, res)
- *     Called when a response has been handled and closed.
+ *   // Define a route after initialization.
+ *   app.post('/users', (req, res) => users.create(req, res));
  *
- *   onroute(req, res)
- *     Called when the server is routing to the callback.
+ *   // Handle NOT FOUND responses.
+ *   app.on('lost', (req, res) => { res.code(404).text('not found'); });
+ *
+ *   // Start listening.
+ *   app.run('localhost', 3000);
+ *
+ * Events:
+ *
+ *   close    ():                Server is closing.
+ *   error    (req, res, error): An error has occured during routing.
+ *   listen   (host, port):      Server has started listening.
+ *   lost     (req, res):        Client has requested an unknown route.
+ *   response (req, res):        Server has sent a response to a client.
  */
 
-const http     = require('http');
-const Request  = require('nest/requests');
-const Response = require('nest/responses');
+const assert       = require('node:assert');
+const http         = require('http');
+const Request      = require('nest/requests');
+const Response     = require('nest/responses');
+const {NestError}  = require('nest/errors');
 
 class Server {
-	constructor (routes = {GET: {}, POST: {}}) {
-		this.setRoutes(routes);
-		this.server = http.createServer(this.handler.bind(this));
+	constructor (routes = {}) {
+		assert(routes instanceof Object, 'routes must be an object');
+		this.routes = routes;
+		this.server = http.createServer(this.handle.bind(this));
 	}
+
+	delete (path, callback) { this.register('DELETE', path, callback); }
+	get    (path, callback) { this.register('GET',    path, callback); }
+	patch  (path, callback) { this.register('PATCH',  path, callback); }
+	post   (path, callback) { this.register('POST',   path, callback); }
+	put    (path, callback) { this.register('PUT',    path, callback); }
 
 	close () {
 		this.onclose();
 		this.server.close();
 	}
 
-	fallback (_, res) { return res.code(404).text('Not found'); }
-
-	get  (path, callback) { return this.routes['GET'][path] = callback; }
-	post (path, callback) { return this.routes['POST'][path] = callback; }
-	put  (path, callback) { return this.routes['PUT'][path] = callback; }
-
-	async handler (request, response) {
-		const {url, method} = request;
-		const [path, query] = url.split('?', 2);
-		// Capture and parse data.
-		const buffers = [];
-		for await (const chunk of request) {
-			buffers.push(chunk);
-		}
-		const body = Buffer.concat(buffers).toString('utf8');
-		// Wrap Node objects to encapsulate our data.
-		const req = new Request(request, url, path, body, query);
-		const res = new Response(response);
-		// Routing.
-		try {
-			await this.onroute(req, res);
-		} catch (e) {
-			this.onerror(req, res, e);
-		}
-		res.end();
-		this.onresponse(req, res);
+	handle (request, response) {
+		const data = [];
+		request.on('data', chunk => {
+			data.push(chunk);
+		});
+		request.on('end', () => {
+			const body = Buffer.concat(data);
+			const req  = new Request(request, body);
+			const res  = new Response(response);
+			this.route(req, res)
+				.catch(e => {
+					this.onerror(e, req, res);
+				})
+				.finally(() => {
+					this.onresponse(req, res);
+					res.end();
+				});
+		});
 	}
 
 	on (event, callback) {
@@ -68,30 +83,49 @@ class Server {
 		return this;
 	}
 
-	onclose    ()            { console.log('Closing...'); }
-	onerror    (req, res, e) { console.error(e); }
-	onresponse (req, res)    { console.log(`${req.method} ${req.url}`); }
+	onclose () {
+		console.log('Closing...');
+	}
 
-	onroute (req, res) {
+	onerror (e, req, res) {
+		res.code(e.code ?? 500).json({
+			name:    e.constructor.name,
+			message: e.message,
+			...e
+		});
+	}
+
+	onlisten (host, port) {
+		console.log(`Server running at http://${host}:${port}`);
+	}
+
+	onlost (req, res) {
+		res.code(404).text('not found');
+	}
+
+	onresponse (req, res) {
+		const date = new Date().toISOString();
+		console.log(`[${date}] ${req.ip} ${res.status} ${req.method} ${req.url}`);
+	}
+
+	register (method, path, callback) {
+		if (!(method in this.routes)) {
+			this.routes[method] = {};
+		}
+		this.routes[method][path] = callback;
+	}
+
+	async route (req, res) {
 		const {method, path} = req;
 		if (method in this.routes && path in this.routes[method]) {
 			return this.routes[method][path](req, res);
 		} else {
-			return this.fallback(req, res);
+			return this.onlost(req, res);
 		}
 	}
 
 	run (host, port) {
-		const now     = new Date().toISOString();
-		const message = `[${now}] Server running at http://${host}:${port}`;
-		this.server.listen(port, host, () => console.log(message));
-	}
-
-	setRoutes (routes) {
-		if (!(routes instanceof Object)) {
-			throw new Error('routes must be an object');
-		}
-		this.routes = routes;
+		this.server.listen(port, host, () => this.onlisten(host, port));
 	}
 }
 
