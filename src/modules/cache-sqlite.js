@@ -49,7 +49,15 @@ class Cache {
 	}
 
 	close () {
-		this.db.close();
+		return new Promise((resolve, reject) => {
+			this.db.close((err) => {
+				if (err) {
+					reject(err);
+				} else {
+					resolve();
+				}
+			});
+		});
 	}
 
 	dump () {
@@ -77,6 +85,9 @@ class Cache {
 	has (key) {
 		return new Promise((resolve, reject) => {
 			this.db.get(HAS_SQL, key, (err, row) => {
+				if (err) {
+					reject(err);
+				}
 				resolve(row !== undefined);
 			});
 		});
