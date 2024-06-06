@@ -25,6 +25,7 @@ app.run('localhost', 3000);
  - Extensions ([nest/extensions](doc/Extensions.md))
  - HTML templating engine ([nest/html](doc/HTML.md))
  - HTTP client ([nest/http](doc/HTTP.md))
+ - Logging ([nest/log](doc/Log.md))
  - Data validation ([nest/validation](doc/Validation.md))
  - WebSocket server ([nest/websocket](doc/WebSocket.md))
 

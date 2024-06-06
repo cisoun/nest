@@ -18,6 +18,7 @@
     "./helpers": "./src/modules/helpers.js",
     "./html": "./src/modules/html.js",
     "./http": "./src/modules/http.js",
+    "./log": "./src/modules/log.js",
     "./requests": "./src/requests.js",
     "./responses": "./src/responses.js",
     "./server": "./src/server.js",
