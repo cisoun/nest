@@ -38,8 +38,9 @@ const HTML        = require('nest/html');
 const Request     = require('nest/requests');
 const Response    = require('nest/responses');
 const Server      = require('nest/server');
-const {JSONError} = require('nest/errors');
+const validation  = require('nest/validation');
 const {statics}   = require('nest/helpers');
+const {NestError} = require('nest/errors');
 
 const Extensions = {
 	'request.validate': request_validate,
@@ -71,10 +72,13 @@ function response_render (file, params={}) {
 }
 
 function statics_handler () {
-	const f = Server.prototype.onroute;
-	Server.prototype.onroute = async function (req, res) {
-		if (req.method == 'GET' && req.path.startsWith('/statics')) {
-			const data = await statics(req.path.slice(1));
+	const f = Server.prototype.route;
+	Server.prototype.route = async function (req, res) {
+		const path = req.path;
+		if (req.method == 'GET' && path.startsWith('/statics')) {
+			const data = await statics(path.slice(1)).catch(e => {
+				throw new NestError(404, 'cannot fetch file');
+			});
 			res.base.write(Buffer.from(data));
 		} else {
 			return f.call(this, req, res);
