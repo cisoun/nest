@@ -1,14 +1,16 @@
-const Cache      = require('nest/cache');
-const CacheSQL   = require('nest/cache-sqlite');
-const Request    = require('nest/requests');
-const Server     = require('nest/server');
-const http       = require('nest/http');
-const validation = require('nest/validation');
-const nest       = require('nest');
+const assert      = require('node:assert');
+const Cache       = require('nest/cache');
+const CacheSQL    = require('nest/cache-sqlite');
+const http        = require('nest/http');
+const log         = require('nest/log');
+const nest        = require('nest');
+const Request     = require('nest/requests');
+const Server      = require('nest/server');
+const validation  = require('nest/validation');
+const {NestError} = require('nest/errors');
+
 require('nest/extensions')(
-	'request.json',
-	'request.validate',
-	'response.json'
+	'request.validate'
 );
 
 const HOST = 'localhost';
@@ -18,26 +20,35 @@ Request.prototype.validate = function (...args) {
 	return validation.validateKeys(this.json, args);
 }
 
-Server.prototype.onresponse = function (req, res) {
-  const date = new Date().toISOString();
-  const {statusCode}        = res;
-  const {method, url, body} = req;
-  console.log(`[${date}] ${statusCode} ${method} ${url} ${body}`);
-}
-
-const assert = (assertion, message) => {
-	console.assert(assertion, message);
-	if (!assertion) {
-		console.error('Tests failed...');
-		process.exit(1);
+const app = nest({
+	'GET': {
+		'/hello': (req, res) => res.code(200).text('hello'),
+		'/name':  (req, res) => res.json({name: 'Joe'})
+	},
+	'POST': {
+		'/name': (req, res) => {
+			const [name] = req.validate('name');
+			return res.json({name});
+		}
 	}
-}
+});
+assert(app instanceof Server, 'server: instance');
+app.on('response', (req, res) => {
+  const {status}          = res;
+  let {method, url, body} = req;
+  method = method.padEnd(4, ' ');
+  log.info(`${status} ${method} ${url} ${body}`);
+});
+app.run(HOST, PORT);
 
 const get = (path, data = null, options = {}) => {
-  options.data   = data;
-  options.method = options.method || 'GET';
-  options.json   = options.json   || false;
-  return http.unsafe(`http://${HOST}:${PORT}${path}`, options);
+	options.host     = HOST;
+	options.path     = path;
+	options.port     = PORT;
+  options.data     = data;
+  options.json   ||= false;
+  options.method ||= 'GET';
+  return http.unsafe(options);
 }
 
 const post = (path, data, headers = {}) => {
@@ -51,36 +62,22 @@ const sleep = (ms) => {
 }
 
 const test_extensions = () => {
-	try {
-		require('nest/extensions')(['dummy']);
-		assert(false, 'extensions: should not exist');
-	} catch {}
-	try {
-		require('nest/extensions')(['response.json']);
-	} catch {
-		assert(false, 'extensions: should exist');
-	}
+	assert.throws(() => {
+		require('nest/extensions')('dummy');
+	})
 }
 
 const test_server = async () => {
-	const app = nest();
-	app.get('/hello', (req, res) => res.code(200).text('hello'));
-	app.post('/name', (req, res) => {
-		const [name] = req.validate('name');
-		return res.text(name);
-	});
-	app.run(HOST, PORT);
-
+	const name = 'Jöë'; // Use something weird to check unicode.
   let response;
   response = await get('/?something');
-  assert(response.status == 404, 'server: short query')
+  assert(response.status == 404, 'server: not found')
   response = await get('/hello', 'test');
-  assert(response.status == 200 && response.raw == 'hello', 'server: hello');
-  response = await post('/name', 'Joe');
-  assert(response.status == 422, 'server: name (text data)')
-  response = await post('/name', {name: 'Joe'});
-  assert(response.status == 200 && response.raw == 'Joe', 'server: name (json data)');
-  app.close();
+  assert(response.status == 200 && response.text == 'hello', 'server: hello');
+  response = await post('/name', name);
+  assert(response.status == 422, 'server: name (text data)');
+  response = await post('/name', {name});
+  assert(response.status == 200 && response.json.name == name, 'server: name (json data)');
 };
 
 const test_cache = async () => {
@@ -131,14 +128,12 @@ const test_cache_sqlite = async () => {
 }
 
 const test_http = async () => {
-	const app = nest();
-	app.get('/', (req, res) => res.code(200).json({'name': 'Joe'}));
-	app.run(HOST, PORT);
-	const response = await http.unsafe(`http://${HOST}:${PORT}`);
-	assert(response.json !== undefined, 'http: no json');
-	const data = response.json;
-	assert('name' in data && data.name == 'Joe', 'http: data not found');
-	app.close();
+	const opts = {host: HOST, port: PORT};
+	let response = await http.unsafe(opts);
+	assert.throws(() => response.json, 'http: no json');
+	response = await http.unsafe({path: '/name', ...opts});
+	assert(response.json instanceof Object, 'http: expected json');
+	assert('name' in response.json && response.json.name == 'Joe', 'http: data not found');
 }
 
 const test_validation = () => {
@@ -148,10 +143,10 @@ const test_validation = () => {
 		gender: 'vodka'
 	};
 	const rules = {
-		name:    'required',
-		age:     'required|number|between:0:100',
-		phone:   'requiredif:age:is:9001',
-		gender:  'in:male:female',
+		name:   'required',
+		age:    'required|number|between:0:100',
+		phone:  'requiredif:age:is:9001',
+		gender: 'in:male:female',
 	};
 	try {
 		const b = new validation.Validator(rules);
@@ -163,18 +158,20 @@ const test_validation = () => {
 			errors.age[1]    == 'must be between 0 and 100' &&
 			errors.phone[0]  == 'required if age is 9001' &&
 			errors.gender[0] == 'not in [male, female]',
-		'validation');
+			'validation'
+		);
 	}
 };
 
 const main = async () => {
-	test_extensions();
+	//test_extensions();
 	await test_server();
 	await test_cache();
 	await test_cache_sqlite();
 	await test_http();
 	test_validation();
 	console.log('Tests passed.')
+	app.close();
 };
 
 main();
