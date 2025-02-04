@@ -8,7 +8,7 @@ const {JSONError} = require('nest/errors');
 class Request {
   constructor (request, body) {
     this.base  = request;
-    this.body  = body;
+    this.body  = Buffer.concat(body);
     this.url   = request.url;
   }
 
