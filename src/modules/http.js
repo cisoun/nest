@@ -101,7 +101,7 @@ const transformRequest = (options = {}) => {
 	options.method                    ??= 'GET';
 	options.headers                   ??= {};
 	options.headers['Content-Length']   = 0;
-	if (options.data !== undefined) {
+	if (options.data !== undefined && options.data !== null) {
 		if (typeof options.data === 'object') {
 			options.data   = JSON.stringify(options.data);
 			options.json ??= true; // Make it true by default.
