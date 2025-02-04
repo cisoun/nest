@@ -7,6 +7,7 @@ const {ValidationError} = require('nest/errors');
 
 const ARG_SEPARATOR  = ':';
 const RULE_SEPARATOR = '|';
+const TYPE_NUMBER    = 'number';
 
 /**
  * Build an object validator.
@@ -40,6 +41,10 @@ function Validator (rules) {
  */
 const Rules = {
 	between: (data, key, value, min, max) => {
+		if (typeof(value) == TYPE_NUMBER) {
+			min = Number(min) || min;
+			max = Number(max) || max;
+		}
 		if (value < min || value > max) {
 			return `must be between ${min} and ${max}`;
 		}
@@ -61,8 +66,9 @@ const Rules = {
 	},
 
 	number: (data, key, value) => {
-		if (typeof value !== 'number' || Number.isNaN(value)) {
-			return `must be a number`;
+		data[key] = Number(value) || value;
+		if (typeof(data[key]) !== TYPE_NUMBER) {
+			return 'must be a number';
 		}
 	},
 
