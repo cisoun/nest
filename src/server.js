@@ -34,16 +34,21 @@
  *   response (req, res):        Server has sent a response to a client.
  */
 
-const assert       = require('node:assert');
-const http         = require('http');
-const Request      = require('nest/requests');
-const Response     = require('nest/responses');
-const {NestError}  = require('nest/errors');
+const assert   = require('node:assert');
+const http     = require('http');
+const Request  = require('nest/requests');
+const Response = require('nest/responses');
 
 class Server {
+	routes = {};
+
 	constructor (routes = {}) {
 		assert(routes instanceof Object, 'routes must be an object');
-		this.routes = routes;
+		for (const [method, mroutes] of Object.entries(routes)) {
+			for (const [path, callback] of Object.entries(mroutes)) {
+				this.register(method, path, callback);
+			}
+		}
 		this.server = http.createServer(this.handle.bind(this));
 	}
 
@@ -64,8 +69,7 @@ class Server {
 			data.push(chunk);
 		});
 		request.on('end', () => {
-			const body = Buffer.concat(data);
-			const req  = new Request(request, body);
+			const req  = new Request(request, data);
 			const res  = new Response(response);
 			this.route(req, res)
 				.catch(e => {
@@ -108,20 +112,33 @@ class Server {
 		console.log(`[${date}] ${req.ip} ${res.status} ${req.method} ${req.url}`);
 	}
 
+	/**
+	 * Register an endpoint.
+	 * @param {string}   method   - Method of the endpoint (by defalut: 'GET').
+	 * @param {stirng}   path     - Path of the endpoint.
+	 * @param {function} callback - Endpoint handler.
+	 *                              Signature is `(req, res) => {}`.
+	 */
 	register (method, path, callback) {
+		assert(callback instanceof Function, `callback for "${path}" not a function`);
 		if (!(method in this.routes)) {
 			this.routes[method] = {};
 		}
+		path = path.replace('*', '.*');
 		this.routes[method][path] = callback;
 	}
 
 	async route (req, res) {
 		const {method, path} = req;
-		if (method in this.routes && path in this.routes[method]) {
-			return this.routes[method][path](req, res);
-		} else {
-			return this.onlost(req, res);
+		if (method in this.routes) {
+			const routes = this.routes[method];
+			for (const route in routes) {
+				if (path.match(`^${route}$`)) {
+					return routes[route](req, res);
+				}
+			}
 		}
+		return this.onlost(req, res);
 	}
 
 	run (host, port) {
