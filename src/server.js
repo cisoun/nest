@@ -69,8 +69,8 @@ class Server {
 			data.push(chunk);
 		});
 		request.on('end', () => {
-			const req  = new Request(request, data);
-			const res  = new Response(response);
+			const req = new Request(request, data);
+			const res = new Response(response);
 			this.route(req, res)
 				.catch(e => {
 					this.onerror(e, req, res);
@@ -115,7 +115,7 @@ class Server {
 	/**
 	 * Register an endpoint.
 	 * @param {string}   method   - Method of the endpoint (by defalut: 'GET').
-	 * @param {stirng}   path     - Path of the endpoint.
+	 * @param {string}   path     - Path of the endpoint.
 	 * @param {function} callback - Endpoint handler.
 	 *                              Signature is `(req, res) => {}`.
 	 */
