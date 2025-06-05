@@ -9,7 +9,7 @@ The cache provides a way to store data for a specific amount of time (by default
 ```js
 const Cache = require('nest/cache');
 const cache = new Cache();
-cache.set('mykey', 'myValue'); 
+cache.set('mykey', 'myValue', 600); // Retain for 5 minutes.
 ```
 
 ## Methods

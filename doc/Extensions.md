@@ -1,13 +1,14 @@
 # Extensions
 
+> **WARNING**: this page is highly subject to changes!
+
 Nest provides built-in extensions and a way to create your owns.
 
 ## Usage
 
 ```js
 require('nest/extensions')(
-  'request.json',
-  'response.json'
+  'response.render'
 )
 ```
 
@@ -15,12 +16,10 @@ require('nest/extensions')(
 
 | Extension       | Description                                                  |
 | --------------- | ------------------------------------------------------------ |
-| `json` | Shortcut for `request.json` and `response.json`. |
-| `request.json` | Add JSON data parsing to all requests.<br />Example: `app.get('/') = (req, res) => console.log(req.json);` |
-| `response.json` | Add JSON response to all responses.<br />Example: `app.get('/') = (req, res) => res.json({message: 'OK'});` |
-| `response.html` | Add HTML response to all responses.<br/>Example: `app.get('/') = (req, res) => res.html('<b>Hi!</b>');` |
-| `response.render` | Return an HTML page with parameters.<br />Example: `app.get('/about') = (req, res) => res.render('about', {name: 'Georges'}));` |
-| `statics` | Allow the server to serve static files. |
+| `response.file` | Allows to serve a file.<br />Example: `app.get('/avatar') = (req, res) => res.file('something.jpg');` |
+| `response.html` | Allows to serve an HTML response.<br/>Example: `app.get('/') = (req, res) => res.html('<b>Hi!</b>');` |
+| `response.render` | Allows to serve an HTML page from the `statics` folder with parameters.<br />Example: `app.get('/about') = (req, res) => res.render('about', {name: 'Georges'}));` |
+| `statics` | Allow the server to serve static files from the `statics` folder. |
 
 ### response.render
 
