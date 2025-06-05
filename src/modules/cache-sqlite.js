@@ -14,8 +14,8 @@
  *   Check key: await cache.has('mykey');
  */
 
-const {now}      = require('nest/helpers');
-const sqlite3    = require('sqlite3').verbose();
+const {now}          = require('nest/helpers');
+const {DatabaseSync} = require('node:sqlite');
 
 const CLEAR_SQL  = 'DELETE FROM cache;';
 const CREATE_SQL = `\
@@ -36,81 +36,75 @@ const DEFAULT_TTL = 3600;
 
 class Cache {
 	constructor (path) {
-		this.db = new sqlite3.Database(path, (err) => {
-			if (err) {
-				throw new Error(err.message);
-			}
-		});
+		this.db = new DatabaseSync(path);
 		this.db.exec(CREATE_SQL);
 	}
 
 	clear () {
-		return this.run(CLEAR_SQL);
+		return this.db.exec(CLEAR_SQL);
 	}
 
 	close () {
 		return new Promise((resolve, reject) => {
-			this.db.close((err) => {
-				if (err) {
-					reject(err);
-				} else {
-					resolve();
-				}
-			});
+			try {
+				this.db.close();
+				resolve();
+			} catch (e) {
+				reject(e);
+			}
 		});
 	}
 
 	dump () {
 		return new Promise((resolve, reject) => {
-			this.db.all(DUMP_SQL, (err, rows) => {
-				resolve(rows);
-			});
+			try {
+				resolve(this.db.prepare(DUMP_SQL).all());
+			} catch (e) {
+				reject(e);
+			}
 		});
 	}
 
 	get (key) {
 		return new Promise((resolve, reject) => {
-			this.db.get(GET_SQL, key, (_, row) => {
-				if (row) {
-					if (row.expiration > now()) {
-						resolve(row.value);
-					}
-					this.unset(key);
+			try {
+				const row = this.db.prepare(GET_SQL).get(key);
+				if (row && row.expiration > now()) {
+					resolve(row.value);
 				}
 				resolve();
-			});
+			} catch (e) {
+				reject(e);
+			}
 		});
 	}
 
 	has (key) {
 		return new Promise((resolve, reject) => {
-			this.db.get(HAS_SQL, key, (err, row) => {
-				if (err) {
-					reject(err);
-				}
-				resolve(row !== undefined);
-			});
+			try {
+				resolve(this.db.prepare(HAS_SQL).get(key) !== undefined);
+			} catch (e) {
+				reject(e);
+			}
 		});
 	}
 
-	run (...args) {
+	run (sql, ...args) {
 		return new Promise((resolve, reject) => {
-			this.db.run(...args, (err, row) => {
-				if (err) {
-					reject(err);
-				} else {
-					resolve(row);
-				}
-			});
+			try {
+				resolve(this.db.prepare(sql).run(...args).changes > 0);
+			} catch (e) {
+				reject(e);
+			}
 		});
 	}
 
 	set (k, v, t = DEFAULT_TTL) {
-		return this.run(SET_SQL, [k, v, now() + t]);
+		return this.run(SET_SQL, k, v, now() + t);
 	}
 
 	unset (key) {
-		return this.run(UNSET_SQL, [key]);
+		return this.run(UNSET_SQL, key);
 	}
 }
 
