@@ -9,6 +9,17 @@ const VAR_PATTERN     = /{{\s*(\w*)\s*(\|\s*(.*))?}}/;
 
 const statics_regex = new RegExp(STATICS_PATTERN, 'ig');
 const var_regex     = new RegExp(VAR_PATTERN, 'g');
+const foreach_regex = new RegExp(FOREACH_PATTERN, 'ig');
+
+const TYPE_STRING = 'string';
+
+function toText (data) {
+	if (typeof data === TYPE_STRING) {
+		return data;
+	} else {
+		return JSON.stringify(data);
+	}
+}
 
 /**
  * Render an HTML template code.
@@ -17,9 +28,9 @@ const var_regex     = new RegExp(VAR_PATTERN, 'g');
 function render (html, params={}) {
 	html = html.replace(statics_regex, (_, p1) => `statics/${p1}`);
 	if (params) {
-		// IDEA: We could use JSON.stringify on the returned result to also add
-		//   quotes automatically.
-		return html.replace(var_regex, (_, p1, p2, p3) => params[p1] ?? p3 ?? '');
+		return html.replace(var_regex, (_, p1, p2, p3) => {
+			return toText(params[p1] ?? p3 ?? '');
+		});
 	}
 	return html;
 }
