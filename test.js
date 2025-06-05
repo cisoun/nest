@@ -138,28 +138,53 @@ const test_http = async () => {
 
 const test_validation = () => {
 	const data = {
-		name:   'joe',
-		age:    '9001',
-		gender: 'vodka'
+		between_str:         'd',
+		between_int:         '22',
+		in:                  'd',
+		number_good:         '1',
+		number_bad:          'a',
+		number_nan:          'NaN',
+		requiredif_is_good:  true,
+		requiredif_set_good: true,
 	};
 	const rules = {
-		name:   'required',
-		age:    'required|number|between:0:100',
-		phone:  'requiredif:age:is:9001',
-		gender: 'in:male:female',
+		between_str:         'between:a:c',
+		between_int:         'between:0:10',
+		in:                  'in:a:b:c',
+		number_good:         'number',
+		number_bad:          'number',
+		number_nan:          'number',
+		required:            'required',
+		requiredif_set_good: 'requiredif:in',
+		requiredif_set_bad:  'requiredif:hello',
+		requiredif_is_good:  'requiredif:in:is:d',
+		requiredif_is_bad:   'requiredif:in:is:2',
 	};
 	try {
 		const b = new validation.Validator(rules);
 		b.validate(data, rules);
 	} catch (e) {
 		const {errors} = e;
-		assert(
-			errors.age[0]    == 'must be a number' &&
-			errors.age[1]    == 'must be between 0 and 100' &&
-			errors.phone[0]  == 'required if age is 9001' &&
-			errors.gender[0] == 'not in [male, female]',
-			'validation'
-		);
+		assert(errors.between_str[0].message == 'must be between a and c',
+			'validation: between_str');
+		assert(errors.between_int[0].message == 'must be between 0 and 10',
+			'validation: between_int');
+		assert(errors.in[0].message == 'not in [a, b, c]',
+			'validation: in');
+		assert(errors.number_bad[0].message == 'must be a number',
+			'validation: number_bad');
+		assert(errors.number_nan[0].message == 'must be a number',
+			'validation: number_nan');
+		assert(errors.required[0].message == 'required',
+			'validation: required');
+		assert(!('requiredif_set_good' in errors),
+			'validation: requiredif_is_good');
+		assert(errors.requiredif_set_bad[0].message == 'required if hello is set',
+			'validation: requiredif_set_bad');
+		assert(!('requiredif_is_good' in errors),
+			'validation: requiredif_is_good');
+		assert(errors.requiredif_is_bad[0].message == 'required if in is 2',
+			'validation: requiredif_is_good');
 	}
 };
 
