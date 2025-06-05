@@ -30,13 +30,14 @@ const nop = () => {};
 
 
 /**
- * Handle a WebSocket connection (handshake, processing, ...).
- * Used by `WebSocketServer`.
+ * WebSocket connection handler (handshake, processing, ...).
+ * @class WebSocketClient
  *
- * @class WebSocket
+ * Used by `WebSocket`.
  */
-class WebSocket {
+class WebSocketClient extends EventEmitter {
 	constructor (socket) {
+		super();
 		this.socket = socket;
 		this.handle = this.handleHandshake;
 
@@ -146,7 +147,7 @@ class WebSocket {
 
 /**
  * Simple WebSocket server.
- * @class WebSocketServer
+ * @class WebSocket
  *
  * Events:
  *
@@ -155,7 +156,7 @@ class WebSocket {
  *   listen  (host, port):     Server has started listening.
  *   sent    (data, encoding): A message has been sent.
  */
-class WebSocketServer extends EventEmitter {
+class WebSocket extends EventEmitter {
 	constructor () {
 		super();
 		this.clients = [];
@@ -165,18 +166,18 @@ class WebSocketServer extends EventEmitter {
 	close () {
 		this.clients.forEach(c => c.close());
 		this.server.close();
-		this.emit('close');
+		this.emit('closed');
 	}
 
 	connect (socket) {
-		const client = new WebSocket(socket);
+		const client = new WebSocketClient(socket);
 		this.clients.push(client);
-		this.emit('connect', socket);
+		this.emit('connected', socket);
 	}
 
 	listen (host, port) {
 		this.server.listen(port, host);
-		this.emit('listen', host, port);
+		this.emit('listening', host, port);
 	}
 
 	send (data, encoding='utf8') {
@@ -186,5 +187,6 @@ class WebSocketServer extends EventEmitter {
 }
 
 module.exports = {
-	WebSocketServer
+	WebSocket,
+	WebSocketClient
 };
