@@ -81,12 +81,14 @@ const Rules = {
 	requiredif: (data, key, value, ref = '', condition = '', refValue = '') => {
 		switch (condition) {
 			case 'is':
-				return ref in data &&
+				if (!(
+					ref in data &&
 					data[ref].toString() == refValue &&
-					!(key in data) ?
-					`required if ${ref} is ${refValue}` : undefined;
+					key in data
+				)) return `required if ${ref} is ${refValue}`;
+			default:
+				if (!(key in data)) return `required if ${ref} is set`;
 		}
-		return `wrong condition: "${ref} ${condition} ${refValue}`;
 	}
 };
 
@@ -124,7 +126,12 @@ function validate (validator, data) {
 			for (const [callback, ...args] of callbacks) {
 				const error = callback(data, key, data[key], ...args);
 				if (error) {
-					messages.push(error);
+					messages.push({
+						rule:    callback.name,
+						args:    args,
+						value:   data[key],
+						message: error
+					});
 				}
 			}
 			if (messages.length) {
