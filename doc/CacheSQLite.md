@@ -1,9 +1,8 @@
 # SQLite cache
 
 > Module: `nest/cache-sqlite`  
-> Requires: `node-sqlite3`
 
-The SQLite cache is based upon `node-sqlite3`. It allows, like [`nest/cache`](Cache.md) to store data for a given amount of time in a SQLite database. The database can be stored in a file or in memory.
+Like [`nest/cache`](Cache.md), use this module to store data for a given amount of time in a SQLite database. The database can be stored in a file or in memory.
 
 ## Usage
 
@@ -19,8 +18,8 @@ cache.set('mykey', 'myValue');
 | Method                      | Description                                                  |
 | --------------------------- | ------------------------------------------------------------ |
 | `clear()`| (async) Clear the cache. |
-| `dump()` | (asnyc) Returns all data in cache. |
-| `get(key)`            | (asnyc) Returns the value of a key. If key doesn't exist or is expired, returns `undefined`. |
-| `has(key)` | (asnyc) Returns `true` if a key exists, or `false`. |
-| `set(key, value, ttl=3600)` | (asnyc) Store a key with a given value. TTL is in seconds, 0 will store the key for infinity. |
-| `unset(key)` | (asnyc) Delete a key from cache. |
+| `dump()` | (async) Returns all data in cache. |
+| `get(key)` | (async) Returns the value of a key. If key doesn't exist or is expired, returns `undefined`. |
+| `has(key)` | (async) Returns `true` if a key exists, or `false`. |
+| `set(key, value, ttl=3600)` | (async) Store a key with a given value. TTL is in seconds, 0 will store the key indefinitely. |
+| `unset(key)` | (async) Delete a key from cache. |

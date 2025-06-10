@@ -9,20 +9,20 @@ require('nest/extensions')(
 
 // Middleware example.
 const middleware = (next) => (req, res) => {
- 	if (!req.headers.authorization) {
+	if (!req.headers.authorization) {
 		res.code(401).json({error: 'authorization header missing'});
 	} else
-    return next(req, res);
+		return next(req, res);
 	}
 };
 
 const api = (req, res) => res.code(200).json({hello: 'world'});
 
 const app = nest({
-  'GET': {
-    '/':    (req, res) => res.html('<h1>Hello world!</h1>'),
-    '/api': middleware(api)
-  }
+	'GET': {
+		'/':    (req, res) => res.html('<h1>Hello world!</h1>'),
+		'/api': middleware(api)
+	}
 });
 
 // Print "Bye!" when the server is shutting down.

@@ -14,16 +14,16 @@ Requests are by default sent over HTTPS. For HTTP, use the `unsafe` call.
 const http = require('nest/http');
 await http.get('https://example.com/json');
 await http.post('https//...', {
-  headers: {authorization: 'Basic hello:world'},
-  data:    {hello: 'World'}
+	headers: {authorization: 'Basic hello:world'},
+	data:    {hello: 'World'}
 });
 await http.request({
-  method: 'POST',
-  host:   'example.com',
-  path:   '/api',
-  data:   {name: 'Joe'}
+	method: 'POST',
+	host:   'example.com',
+	path:   '/api',
+	data:   {name: 'Joe'}
 }).then(response => {
-  console.log(response.status, response.json);
+	console.log(response.status, response.json);
 });
 ```
 

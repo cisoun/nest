@@ -13,7 +13,7 @@ const PersonValidator = new Validator({
 });
 
 app.get('/', (req, res) => {
-  const {name, age, gender} = PersonValidator.validate(req.json);
+	const { name, age, gender } = PersonValidator.validate(req.json);
 });
 ```
 
