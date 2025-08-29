@@ -2,7 +2,7 @@
  * HTTP client module.
  * @module http
  *
- * Note: since Node.js v21, you can use the Fetch API instead.
+ * Note: since Node.js v18, it is advised to use the Fetch API instead.
  *
  * Usage:
  *

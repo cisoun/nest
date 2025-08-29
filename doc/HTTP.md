@@ -2,7 +2,8 @@
 
 > Module: `nest/http`
 
-> **Note: since Node.js v21, you can use the Fetch API instead.**
+> [!WARNING]  
+> Since Node.js v18, it is advised to use the [Fetch API](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API) instead.**
 
 HTTP client module. Similar to Axios.
 

@@ -1,6 +1,6 @@
 # Cache
 
-> Module : `nest/cache`
+> Module: `nest/cache`
 
 The cache provides a way to store data for a specific amount of time (by default: 1 hour) on memory.
 

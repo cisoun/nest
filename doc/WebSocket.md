@@ -2,6 +2,9 @@
 
 >  Module: `nest/websocket`
 
+> [!WARNING]
+> This implementation is fairly basic and insecure. Use it only for public broadcasting.
+
 Provides a WebSocket server.
 
 ## Server
@@ -10,7 +13,7 @@ Provides a WebSocket server.
 
 ### Notes
 
-- Current state only allows messages broadcast.
+- Current state only allows messages broadcasting.
 - Each WebSocket connection is wrapped in a `WebSocketClient` class instance that you can import from `nest/websocket`. Please refer to [websocket.js](../src/modules/websocket.js) for more informations.
 
 ### Usage

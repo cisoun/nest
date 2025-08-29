@@ -1,6 +1,7 @@
 # Extensions
 
-> **WARNING**: this page is highly subject to changes!
+> [!WARNING]
+> This page is highly subject to changes!
 
 Nest provides built-in extensions and a way to create your owns.
 

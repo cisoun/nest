@@ -16,6 +16,10 @@ app.get('/api/hello', (req, res) => {
 app.run('localhost', 3000);
 ```
 
+## Requirements
+
+- **Node.js** >=22.5.0
+
 ## Built-in features
 
  - Data caching ([nest/cache](doc/Cache.md))

@@ -1,5 +1,9 @@
 # Validation
 
+> Module: `nest/validation`
+
+Validation module, inspired by Laravel.
+
 ## Usage
 
 ```js
