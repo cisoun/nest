@@ -132,8 +132,7 @@ class Server {
 	}
 
 	onresponse (req, res) {
-		const date = new Date().toISOString();
-		log.info(`[${date}] ${req.ip} ${res.status} ${req.method} ${req.url}`);
+		log.info(`${req.ip} ${res.status} ${req.method} ${req.url}`);
 	}
 
 	/**
