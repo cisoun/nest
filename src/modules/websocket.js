@@ -80,7 +80,7 @@ class WebSocketClient extends EventEmitter {
 	}
 
 	handleMessage (socket, headers, data) {
-		console.log(data);
+		// Nothing to do yet.
 	}
 
 	ondata (data) {

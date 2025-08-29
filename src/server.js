@@ -43,13 +43,9 @@ class Server {
 	routes = {};
 
 	constructor (routes = {}) {
-		assert(routes instanceof Object, 'routes must be an object');
-		for (const [method, mroutes] of Object.entries(routes)) {
-			for (const [path, callback] of Object.entries(mroutes)) {
-				this.register(method, path, callback);
-			}
-		}
-		this.server = http.createServer(this.handle.bind(this));
+		this.initializeRoutes(routes);
+		this.initializeServer();
+		this.handleTermination();
 	}
 
 	delete (path, callback) { this.register('DELETE', path, callback); }
@@ -80,6 +76,27 @@ class Server {
 					res.end();
 				});
 		});
+	}
+
+	handleTermination () {
+		// NOTE: we use `once()` in order to call the termination only once.
+		//   Running the server through npm might trigger a termination multiple
+		//   times so we have to ensure it is done only once.
+		process.once('SIGINT',  this.close.bind(this));
+		process.once('SIGTERM', this.close.bind(this));
+	}
+
+	initializeRoutes (routes) {
+		assert(routes instanceof Object, 'routes must be an object');
+		for (const [method, mroutes] of Object.entries(routes)) {
+			for (const [path, callback] of Object.entries(mroutes)) {
+				this.register(method, path, callback);
+			}
+		}
+	}
+
+	initializeServer () {
+		this.server = http.createServer(this.handle.bind(this));
 	}
 
 	on (event, callback) {

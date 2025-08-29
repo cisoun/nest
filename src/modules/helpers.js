@@ -16,7 +16,7 @@ const now = () => Math.floor(Date.now() / 1000);
  * Return the content of a static file.
  * @param {String} path - Path of the static file.
  */
-const statics = async (path) => await readFile(`statics/${path}`);
+const statics = (path) => readFile(`statics/${path}`, {encoding: 'utf8'});
 
 module.exports = {
 	fileExtension,
