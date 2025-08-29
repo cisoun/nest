@@ -34,10 +34,12 @@
  *   response (req, res):        Server has sent a response to a client.
  */
 
-const assert   = require('node:assert');
-const http     = require('http');
-const Request  = require('nest/requests');
-const Response = require('nest/responses');
+const assert        = require('node:assert');
+const http          = require('http');
+const log           = require('nest/log');
+const Request       = require('nest/requests');
+const Response      = require('nest/responses');
+const { NestError } = require('nest/errors');
 
 class Server {
 	routes = {};
@@ -105,19 +107,24 @@ class Server {
 	}
 
 	onclose () {
-		console.log('Closing...');
+		log.info('Closing...');
 	}
 
 	onerror (e, req, res) {
-		res.code(e.code ?? 500).json({
-			name:    e.constructor.name,
-			message: e.message,
-			...e
-		});
+		if (e instanceof NestError) {
+			res.code(e.code).json({
+				...e,
+				name: e.constructor.name,
+				message: e.message,
+			});
+		} else {
+			log.error(e.stack.slice(7)); // Unmanaged, should be logged.
+			res.code(500).end();
+		}
 	}
 
 	onlisten (host, port) {
-		console.log(`Server running at http://${host}:${port}`);
+		log.info(`Server running at http://${host}:${port}`);
 	}
 
 	onlost (req, res) {
@@ -126,7 +133,7 @@ class Server {
 
 	onresponse (req, res) {
 		const date = new Date().toISOString();
-		console.log(`[${date}] ${req.ip} ${res.status} ${req.method} ${req.url}`);
+		log.info(`[${date}] ${req.ip} ${res.status} ${req.method} ${req.url}`);
 	}
 
 	/**
