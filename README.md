@@ -1,7 +1,9 @@
+<p align="center">
+ <img src="doc/nest.svg" width="500"/>
+</p>
 
-
-![	](doc/nest.svg)
-
+![GitHub package.json version](https://img.shields.io/github/package-json/v/cisoun/nest)
+![GitHub License](https://img.shields.io/github/license/cisoun/nest)
 
 A lightweight web server built on top of Node.js with zero dependencies and extensibility in mind.
 
@@ -16,7 +18,7 @@ app.get('/api/hello', (req, res) => {
 app.run('localhost', 3000);
 ```
 
-## Requirements
+## Requirements
 
 - **Node.js** >=22.5.0
 
