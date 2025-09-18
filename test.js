@@ -7,7 +7,6 @@ const nest        = require('nest');
 const Request     = require('nest/requests');
 const Server      = require('nest/server');
 const validation  = require('nest/validation');
-const {NestError} = require('nest/errors');
 
 require('nest/extensions')(
 	'request.validate'
@@ -23,7 +22,8 @@ Request.prototype.validate = function (...args) {
 const app = nest({
 	'GET': {
 		'/hello': (req, res) => res.code(200).text('hello'),
-		'/name':  (req, res) => res.json({name: 'Joe'})
+		'/name':  (req, res) => res.json({name: 'Joe'}),
+		'/fail':  (req, res) => { throw new Error('fail'); }
 	},
 	'POST': {
 		'/name': (req, res) => {
@@ -32,13 +32,16 @@ const app = nest({
 		}
 	}
 });
+
 assert(app instanceof Server, 'server: instance');
+
 app.on('response', (req, res) => {
   const {status}          = res;
   let {method, url, body} = req;
   method = method.padEnd(4, ' ');
   log.info(`${status} ${method} ${url} ${body}`);
 });
+
 app.run(HOST, PORT);
 
 const get = (path, data = null, options = {}) => {
@@ -78,6 +81,8 @@ const test_server = async () => {
   assert(response.status == 422, 'server: name (text data)');
   response = await post('/name', {name});
   assert(response.status == 200 && response.json.name == name, 'server: name (json data)');
+	response = await get('/fail');
+	assert(response.status == 500, 'server: fail');
 };
 
 const test_cache = async () => {
@@ -90,7 +95,7 @@ const test_cache = async () => {
 	assert(!cache.has('test'), 'cache: has');
 	// Set a key.
 	cache.set('test', 1);
-	assert(cache.has('test'), 'cache: set');
+	assert(cache.has('test') === true, 'cache: set');
 	// Check key.
 	assert(cache.get('test') == 1, 'cache: get');
 	// Remove key.
@@ -189,7 +194,7 @@ const test_validation = () => {
 };
 
 const main = async () => {
-	//test_extensions();
+	test_extensions();
 	await test_server();
 	await test_cache();
 	await test_cache_sqlite();
