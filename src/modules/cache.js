@@ -17,7 +17,7 @@
  *   Dump cache:       const data = cache.dump();
  */
 
-const {now} = require('nest/helpers');
+const { now } = require('nest/helpers');
 
 // Default time to live.
 const DEFAULT_TTL = 3600;
@@ -26,41 +26,38 @@ class Cache {
 	#cache;
 
 	constructor () {
-		this.#cache = {};
+		this.#cache = new Map();
 	}
 
 	#build (v, t) {
 		return {value: v, expiration: t ? now() + t : 0};
 	}
 
-	#flushKey (key) {
-		const data = this.#cache[key];
-		if (data && data.expiration && data.expiration < now()) {
-			this.unset(key);
-		}
-	}
-
 	dump () {
-		return this.#cache;
+		return Object.fromEntries(this.#cache);
 	}
 
 	get (key) {
-		if (this.has(key)) {
-			return this.#cache[key].value;
+		const data = this.#cache.get(key);
+		if (data) {
+			if (data.expiration && data.expiration < now()) {
+				this.unset(key);
+			} else {
+				return data.value;
+			}
 		}
 	}
 
 	has (key) {
-		this.#flushKey(key);
-		return key in this.#cache;
+		return this.get(key) !== undefined;
 	}
 
 	set (key, value, ttl = DEFAULT_TTL) {
-		this.#cache[key] = this.#build(value, ttl);
+		this.#cache.set(key, this.#build(value, ttl));
 	}
 
 	unset (key) {
-		delete this.#cache[key];
+		this.#cache.delete(key);
 	}
 }
 
