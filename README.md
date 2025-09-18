@@ -10,17 +10,13 @@ A lightweight web server built on top of Node.js with zero dependencies and exte
 ## Usage
 
 ```js
-const nest = require('nest');
+import nest from 'nest';
 const app = nest();
 app.get('/api/hello', (req, res) => {
   res.code(200).json({message: 'Hello!'});
 });
 app.run('localhost', 3000);
 ```
-
-## Requirements
-
-- **Node.js** >=22.5.0
 
 ## Built-in features
 
@@ -33,6 +29,16 @@ app.run('localhost', 3000);
  - Logging ([nest/log](doc/Log.md))
  - Data validation ([nest/validation](doc/Validation.md))
  - WebSocket server ([nest/websocket](doc/WebSocket.md))
+
+## Requirements
+
+- **Node.js** >=22.5.0
+
+## Installation
+
+```sh
+npm i https://github.com/cisoun/nest
+```
 
 ## License
 
