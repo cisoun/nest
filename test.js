@@ -1,12 +1,16 @@
-const assert      = require('node:assert');
-const Cache       = require('nest/cache');
-const CacheSQL    = require('nest/cache-sqlite');
-const http        = require('nest/http');
-const log         = require('nest/log');
-const nest        = require('nest');
-const Request     = require('nest/requests');
-const Server      = require('nest/server');
-const validation  = require('nest/validation');
+const assert     = require('node:assert');
+const Cache      = require('nest/cache');
+const CacheSQL   = require('nest/cache-sqlite');
+const extensions = require('nest/extensions');
+const http       = require('nest/http');
+const log        = require('nest/log');
+const nest       = require('nest');
+const Request    = require('nest/requests');
+const Server     = require('nest/server');
+const validation = require('nest/validation');
+const {
+	NestError
+} = require('nest/errors');
 
 const HOST = 'localhost';
 const PORT = 9000;
@@ -25,6 +29,15 @@ const app = nest({
 	}
 });
 
+app.use(
+	'request.get',
+	'request.validate',
+	'response.file',
+	'response.html',
+	'response.render',
+	'statics'
+);
+
 assert(app instanceof Server, 'server: instance');
 
 app.on('response', (req, res) => {
@@ -33,12 +46,6 @@ app.on('response', (req, res) => {
   method = method.padEnd(4, ' ');
   log.info(`${status} ${method} ${url} ${body}`);
 });
-
-app.use(
-	'request.get',
-	'request.validate',
-	'response.file',
-);
 
 app.run(HOST, PORT);
 
@@ -63,12 +70,26 @@ const sleep = (ms) => {
 }
 
 const test_extensions = () => {
+	// Register an extension.
+	extensions.register('test', (instance) => {
+		instance.test = () => {
+			return 'hello';
+		};
+	});
+	assert.doesNotThrow(
+		() => app.use('test'),
+		NestError,
+		'extensions: valid extensions'
+	);
+
+	// Check extension.
+	assert(app.test() == 'hello', 'extensions: check extension');
+
+	// Try to load invalid extension.
 	assert.throws(
 		() => app.use('dummy'),
-		{
-			name: 'NestError',
-			message: 'extension "dummy" is not available'
-  	}
+		NestError,
+		'extensions: invalid extension'
   );
 }
 
