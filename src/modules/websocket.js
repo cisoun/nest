@@ -16,18 +16,14 @@ const crypto       = require('crypto');
 const EventEmitter = require('node:events');
 const http         = require('http');
 const net          = require('net');
-const {Buffer}     = require('buffer');
-
+const { Buffer }   = require('buffer');
+const { nop }      = require('nest/helpers');
 
 const CARRIAGE_RETURN   = '\r\n';
 const HEADER_CONNECTION = 'Connection';
 const HEADER_KEY        = 'Sec-WebSocket-Key';
 const HEADER_UPGRADE    = 'upgrade';
 const MAGIC             = '258EAFA5-E914-47DA-95CA-C5AB0DC85B11';
-
-
-const nop = () => {};
-
 
 /**
  * WebSocket connection handler (handshake, processing, ...).
