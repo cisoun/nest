@@ -22,14 +22,17 @@ const http  = require('http');
 const https = require('https');
 
 class Response {
+	#response;
+
 	constructor (response, data) {
-		this.response = response;
-		this.body     = data;
+		this.#response = response;
+		this.body      = data;
 	}
-	get headers () { return this.response.headers; }
+
+	get headers () { return this.#response.headers; }
 	get json    () { return JSON.parse(this.body); }
-	get message () { return this.response.message; }
-	get status  () { return this.response.statusCode; }
+	get message () { return this.#response.message; }
+	get status  () { return this.#response.statusCode; }
 	get text    () { return this.body.toString('utf8'); }
 }
 
