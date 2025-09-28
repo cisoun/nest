@@ -1,5 +1,5 @@
 /**
- * Extension module.
+ * Extensions module.
  * @module extensions
  *
  * This module provide base extensions to Nest.

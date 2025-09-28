@@ -1,3 +1,8 @@
+/**
+ * Helpers module.
+ * @module helpers
+ */
+
 const {readFile} = require('fs/promises');
 const {
 	extname,
