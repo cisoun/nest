@@ -3,7 +3,14 @@
  * @module validation
  */
 
-const {ValidationError} = require('nest/errors');
+const {
+	assertIsArray,
+	assertIsObject
+} = require('nest/assert');
+const {
+	NestError,
+	ValidationError
+} = require('nest/errors');
 
 const ARG_SEPARATOR  = ':';
 const RULE_SEPARATOR = '|';
@@ -24,6 +31,7 @@ const TYPE_NUMBER    = 'number';
  * @returns {function)   Instance of validator.
  */
 function Validator (rules) {
+	assertIsObject(rules, `rules must be an object, got ${typeof(rules)}`);
 	this.decoder  = decode(rules);
 	this.rules    = rules;
 	this.validate = (data) => validate(this, data);
@@ -117,31 +125,33 @@ const decode = (rules) => {
  * @param   {Validator} validator - Validator to use.
  * @param   {Object}    data      - Data to validate.
  * @returns {Object}                Validated data.
+ * @throw   {AssertError}           Assertion errors..
  * @throws  {ValidationError}       Validation errors.
  */
 function validate (validator, data) {
+	assertIsObject(data, 'data must be an object');
 	const errors = {};
-		for (const [key, ...callbacks] of validator.decoder) {
-			const messages = [];
-			for (const [callback, ...args] of callbacks) {
-				const error = callback(data, key, data[key], ...args);
-				if (error) {
-					messages.push({
-						rule:    callback.name,
-						args:    args,
-						value:   data[key],
-						message: error
-					});
-				}
-			}
-			if (messages.length) {
-				errors[key] = messages;
+	for (const [key, ...callbacks] of validator.decoder) {
+		const messages = [];
+		for (const [callback, ...args] of callbacks) {
+			const error = callback(data, key, data[key], ...args);
+			if (error) {
+				messages.push({
+					rule:    callback.name,
+					args:    args,
+					value:   data[key],
+					message: error
+				});
 			}
 		}
-		if (Object.keys(errors).length) {
-			throw new ValidationError(errors);
+		if (messages.length) {
+			errors[key] = messages;
 		}
-		return data;
+	}
+	if (Object.keys(errors).length) {
+		throw new ValidationError(errors);
+	}
+	return data;
 }
 
 /**
@@ -152,16 +162,14 @@ function validate (validator, data) {
  *
  * @param   {Object} data     - Data of the request.
  * @param   {Array}  keys     - List of parameters to validate.
+ * @throws  {AssertError}     Assertion errors..
  * @throws  {ValidationError} Thrown if some parameters are missing.
  * @returns {Array}           Array containing needed parameters.
  */
 function validateKeys (data, keys) {
-	// NOTE: Could be done by using validateObject but this way is faster.
-	if (!(data instanceof Object)) {
-		const errors = Object.fromEntries(keys.map(i => [i, ['required']]));
-		throw new ValidationError(errors);
-	}
-	const e = [];
+	assertIsObject(data, 'data must be an object');
+	assertIsArray(keys);
+	let e = [];
 	for (const key of keys) {
 		if (!data.hasOwnProperty(key) ||
 			data[key] == undefined ||
@@ -169,7 +177,7 @@ function validateKeys (data, keys) {
 			e.push(key);
 		}
 	}
-	if (e.length) {
+	if (e.length > 0) {
 		const errors = Object.fromEntries(e.map(i => [i, ['required']]));
 		throw new ValidationError(errors);
 	}
