@@ -20,6 +20,7 @@ app.run('localhost', 3000);
 
 ## Built-in features
 
+ - Assertions ([nest/assert](doc/Assert.md))
  - Data caching ([nest/cache](doc/Cache.md))
  - SQLite based data caching ([nest/cache-sqlite](doc/CacheSQLite.md))
  - Cryptography utilities ([nest/crypto](doc/Crypto.md))

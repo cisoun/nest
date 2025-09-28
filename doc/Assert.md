@@ -2,7 +2,7 @@
 
 >  Module: `nest/assert`
 
-Provides assertion utilities that can be toggled.
+Provides assertion utilities that can be toggled on or off.
 
 > [!WARNING]
 > To activate assertions, set the `ASSERT` environement variable to 1.
