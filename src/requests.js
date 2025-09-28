@@ -3,7 +3,10 @@
  * @module requests
  */
 
-const {JSONError} = require('nest/errors');
+const {
+	HTTPError,
+	NestError
+} = require('nest/errors');
 
 class Request {
   constructor (request, body) {
@@ -18,8 +21,8 @@ class Request {
   get json () {
   	try {
   		return JSON.parse(this.body);
-  	} catch (e) {
-  		throw new JSONError(this.body);
+  	} catch {
+  		throw new HTTPError(422, 'invalid JSON payload');
   	}
   }
 

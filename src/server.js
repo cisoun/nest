@@ -34,13 +34,17 @@
  *   response (req, res):        Server has sent a response to a client.
  */
 
-const assert        = require('node:assert');
-const http          = require('http');
-const log           = require('nest/log');
-const Request       = require('nest/requests');
-const Response      = require('nest/responses');
-const { NestError } = require('nest/errors');
+const assert     = require('node:assert');
 const extensions = require('nest/extensions');
+const http       = require('http');
+const log        = require('nest/log');
+const Request    = require('nest/requests');
+const Response   = require('nest/responses');
+const {
+	HTTPError,
+	NestError,
+	ValidationError
+} = require('nest/errors');
 
 class Server {
 	routes = {};
@@ -112,15 +116,11 @@ class Server {
 	}
 
 	onerror (e, req, res) {
-		if (e instanceof NestError) {
-			res.code(e.code).json({
-				...e,
-				name: e.constructor.name,
-				message: e.message,
-			});
+		if (e instanceof HTTPError) {
+			res.code(e.code).json(e.toJSON());
 		} else {
-			log.error(e.stack.slice(7)); // Unmanaged, should be logged.
-			res.code(500).end();
+			log.error(e.stack); // Unmanaged, should be logged.
+			res.code(500);
 		}
 	}
 
@@ -129,7 +129,7 @@ class Server {
 	}
 
 	onlost (req, res) {
-		res.code(404).text('not found');
+		res.code(404);
 	}
 
 	onresponse (req, res) {
