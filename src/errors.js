@@ -14,36 +14,52 @@ class NestError extends Error {
 	}
 }
 
+class AssertError extends NestError {}
+
 class HTTPError extends NestError {
 	/**
 	 * @constructor
 	 * @param {integer} [code=400]     - HTTP error code.
 	 * @param {string}  [message=null] - Message of the error.
 	 */
-	constructor (code = 400, ...args) {
-		super(...args);
-		this.name    = this.constructor.name;
+	constructor (code = 400, message=null, ...args) {
+		super(message, ...args);
 		this.code    = code;
 	}
-}
 
-class JSONError extends HTTPError {
-	constructor (data) {
-		super(422, 'cannot parse JSON data');
-		this.data = data;
+	toJSON () {
+		return {
+			code: this.code,
+			message: this.message,
+			name: this.name,
+		};
 	}
 }
 
-class ValidationError extends HTTPError {
+class HTTPValidationError extends HTTPError {
+	constructor (errors, message = 'validation failed') {
+		super(422, message);
+		this.errors = errors;
+	}
+
+	toJSON () {
+		const data = super.toJSON();
+		data.errors = this.errors;
+		return data;
+	}
+}
+
+class ValidationError extends NestError {
 	constructor (errors) {
-		super(422, 'cannot validate request');
+		super();
 		this.errors = errors;
 	}
 }
 
 module.exports = {
-	JSONError,
+	AssertError,
 	HTTPError,
+	HTTPValidationError,
 	NestError,
 	ValidationError
 };
