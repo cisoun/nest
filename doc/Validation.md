@@ -7,7 +7,7 @@ Validation module, inspired by Laravel.
 ## Usage
 
 ```js
-const validation = require('nest/validation');
+const { Validator } = require('nest/validation');
 
 const PersonValidator = new Validator({
 	name:       'required',
@@ -33,6 +33,11 @@ app.get('/', (req, res) => {
 `ValidationError`: the validation has failed. Errors are provided as the `errors` property.
 
 ## Rules
+
+> [!WARNING]
+>
+> - Rules must be defined by order of importance. Typically, `required` would be the first to be set.
+> - Rules must be separated by a vertical line "|", parameters are separated by a colon ":".
 
 | Rule                                     | Description                                                  |
 | ---------------------------------------- | ------------------------------------------------------------ |

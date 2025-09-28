@@ -19,6 +19,8 @@ app.use(
 
 | Extension       | Description                                                  |
 | --------------- | ------------------------------------------------------------ |
+| `request.get` | Ensure a JSON body is given and get its specific keys.<br/> Example: `const [name, age] = req.get('name', 'age');` |
+| `request.validate` | Validate the JSON body of a request.<br/>Example: `req.validate({'name': 'required'});` |
 | `response.file` | Allows to serve a file.<br />Example: `app.get('/avatar') = (req, res) => res.file('something.jpg');` |
 | `response.html` | Allows to serve an HTML response.<br/>Example: `app.get('/') = (req, res) => res.html('<b>Hi!</b>');` |
 | `response.render` | Allows to serve an HTML page from the `statics` folder with parameters.<br />Example: `app.get('/about') = (req, res) => res.render('about', {name: 'Georges'}));` |
@@ -44,6 +46,19 @@ app.get('/about') = (req, res) => res.render('about', {name: 'John'});
 
 The `name` field of the HTML page will be replaced by "John".
 
+### request.validate
+
+Activate this extension to validate the JSON body of a request. Uses the [validation](Validation.md) module.
+
+```js
+req.validate({
+  'name': 'required',
+  'age': 'required|number|between:7:77'
+});
+```
+
+To see which rules are available, please refer to [Validation](Validation.md).
+
 ### statics
 
 To serve static files, create a `statics` folder in the root of your project.
@@ -53,12 +68,43 @@ This means, every GET request pointing to `/statics/<path>` will return the cont
 
 The approach is pretty basic: modify the prototypes of Nest's internal objects.
 
-### Example: add JSON response
+You can also use the `register(name, (instance) => {})` method to add a custom extension into Nest so you can load it through the `use` method of your Nest instance. This is especially useful when an extension has to alterate a specific Nest instance.
+
+### Examples
 
 ```js
-Response.prototype.json = function (data) {
-	this.base.setHeader('Content-Type', 'application/json');
-	this.base.write(JSON.stringify(data));
-	return this;
+const nest = require('nest');
+const extensions = require('nest/extensions');
+
+// Add a guard to ensure the "Authorization" header is set to each requests.
+function guard (instance) {
+	const f = instance.route;
+	instance.route = async function (req, res) {
+		const path = req.path;
+		if ('Authorization' in req.headers) {
+			return res.text('OK');
+		} else {
+			return res.code(403).text('No authorization provided');
+		}
+	}
 }
+
+// Add JSON responses.
+function response_json () {
+  Response.prototype.json = function (data) {
+    this.base.setHeader('Content-Type', 'application/json');
+    this.base.write(JSON.stringify(data));
+    return this;
+  }
+}
+
+extensions.register('guard', guard);
+extensions.register('response.json', response_json);
+
+const app = nest();
+
+app.use(
+  'guard',
+  'response.json'
+);
 ```

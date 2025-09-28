@@ -6,31 +6,32 @@
  *
  * Usage:
  *
- *   import { use } from 'nest/extensions';
- *   const { use } = require('nest/extensions');
- *
- *   use(
+ *   const app = nest();
+ *   app.use(
  *     'request.get',
  *     'statics'
  *   );
  *
  * Extensions:
  *
- *   request.get:     Ensure a JSON body is given and get its specific keys.
- *                    E.g.: [name, age] = req.get('name', 'age');
+ *   request.get:      Ensure a JSON body is given and get its specific keys.
+ *                     E.g.: [name, age] = req.get('name', 'age');
  *
- *   response.file:   Allow a response to send a file from a specific path.
- *                    E.g.: res.file('statics/images/logo.png');
+ *   request.validate: Validate the content of a request.
+ *                     E.g.: req.validate({'name': 'required'});
  *
- *   response.html:   Allow a response to send HTML code.
- *                    E.g.: res.html('<div>Hello</div>');
+ *   response.file:    Allow a response to send a file from a specific path.
+ *                     E.g.: res.file('statics/images/logo.png');
  *
- *   response.render: Allow a response to render and serve an HTML static file.
- *                    Will load: response.html
- *                    E.g.: res.render('index', {version: '1.0'});
+ *   response.html:    Allow a response to send HTML code.
+ *                     E.g.: res.html('<div>Hello</div>');
  *
- *   statics:         Allow the server to serve static files through GET
- *                    requests with URLs starting by `/statics`.
+ *   response.render:  Allow a response to render and serve an HTML static file.
+ *                     Will load: response.html
+ *                     E.g.: res.render('index', {version: '1.0'});
+ *
+ *   statics:          Allow the server to serve static files through GET
+ *                     requests with URLs starting by `/statics`.
  */
 
 const HTML     = require('nest/html');
@@ -126,7 +127,7 @@ function response_html () {
 	}
 }
 
-function response_render (file, params={}) {
+function response_render () {
 	response_html();
 	Response.prototype.render = async function (file, params={}) {
 		const data = await statics(file + '.html');

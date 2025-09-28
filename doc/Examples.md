@@ -3,9 +3,6 @@
 ```js
 const nest = require('nest');
 const log  = require('nest/log');
-require('nest/extensions')(
-	'responses.html'
-);
 
 // Middleware example.
 const middleware = (next) => (req, res) => {
@@ -24,6 +21,8 @@ const app = nest({
 		'/api': middleware(api)
 	}
 });
+
+app.use('response.html');
 
 // Print "Bye!" when the server is shutting down.
 app.on('close',(host, port) => log.info('Bye!'));
