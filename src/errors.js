@@ -7,7 +7,12 @@
  * A managed error response that can be extended.
  * @class NestError
  */
-class NestError extends Error {}
+class NestError extends Error {
+	constructor (...args) {
+		super(...args);
+		this.name = this.constructor.name;
+	}
+}
 
 class HTTPError extends NestError {
 	/**
