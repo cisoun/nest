@@ -10,20 +10,20 @@
   },
   "exports": {
     ".": "./index.js",
-    "./assert": "./src/modules/assert.js",
-    "./cache": "./src/modules/cache.js",
-    "./cache-sqlite": "./src/modules/cache-sqlite.js",
-    "./crypto": "./src/modules/crypto.js",
+    "./assert": "./src/assert.js",
+    "./cache": "./src/cache.js",
+    "./cache-sqlite": "./src/cache-sqlite.js",
+    "./crypto": "./src/crypto.js",
     "./errors": "./src/errors.js",
-    "./extensions": "./src/modules/extensions.js",
-    "./helpers": "./src/modules/helpers.js",
-    "./html": "./src/modules/html.js",
-    "./http": "./src/modules/http.js",
-    "./log": "./src/modules/log.js",
+    "./extensions": "./src/extensions.js",
+    "./helpers": "./src/helpers.js",
+    "./html": "./src/html.js",
+    "./http": "./src/http.js",
+    "./log": "./src/log.js",
     "./requests": "./src/requests.js",
     "./responses": "./src/responses.js",
     "./server": "./src/server.js",
-    "./validation": "./src/modules/validation.js",
-    "./websocket": "./src/modules/websocket.js"
+    "./validation": "./src/validation.js",
+    "./websocket": "./src/websocket.js"
   }
 }
