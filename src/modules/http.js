@@ -22,13 +22,15 @@ const http  = require('http');
 const https = require('https');
 
 class Response {
-	constructor (status, headers, data) {
-		this.status  = status;
-		this.headers = headers;
-		this.body    = data;
+	constructor (response, data) {
+		this.response = response;
+		this.body     = data;
 	}
-	get json () { return JSON.parse(this.body); }
-	get text () { return this.body.toString('utf8'); }
+	get headers () { return this.response.headers; }
+	get json    () { return JSON.parse(this.body); }
+	get message () { return this.response.message; }
+	get status  () { return this.response.statusCode; }
+	get text    () { return this.body.toString('utf8'); }
 }
 
 const basicAuth = (user, pass) => user + ':' + pass;
@@ -51,11 +53,7 @@ const get = async (url, options = {}) => {
 const handleData = (options) => options.data || '';
 
 const handleResponse = (response, data) => {
-	return new Response(
-		response.statusCode,
-		response.headers,
-		Buffer.concat(data)
-	);
+	return new Response(response, Buffer.concat(data));
 }
 
 /**
@@ -87,10 +85,10 @@ const post = async (url, options = {}) => {
 const request = (options = {}, handler = https) => {
 	transformRequest(options);
 	return new Promise((resolve, reject) => {
-		handler.request(options, res => {
+		handler.request(options, response => {
 			const data = [];
-			res.on('data', (chunk) => data.push(chunk));
-			res.on('end',  ()      => resolve(handleResponse(res, data)));
+			response.on('data', (chunk) => data.push(chunk));
+			response.on('end',  ()      => resolve(handleResponse(response, data)));
 		})
 		.on('error', error => reject(error))
 		.end(Buffer.from(handleData(options)));
