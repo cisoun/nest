@@ -40,6 +40,7 @@ const log           = require('nest/log');
 const Request       = require('nest/requests');
 const Response      = require('nest/responses');
 const { NestError } = require('nest/errors');
+const extensions = require('nest/extensions');
 
 class Server {
 	routes = {};
@@ -166,6 +167,10 @@ class Server {
 
 	run (host, port) {
 		this.server.listen(port, host, () => this.onlisten(host, port));
+	}
+
+	use (...e) {
+		extensions.use(...e);
 	}
 }
 

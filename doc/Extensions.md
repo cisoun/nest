@@ -8,9 +8,11 @@ Nest provides built-in extensions and a way to create your owns.
 ## Usage
 
 ```js
-require('nest/extensions')(
+const app = nest();
+app.use(
+  'request.get',
   'response.render'
-)
+);
 ```
 
 ## Built-in extensions

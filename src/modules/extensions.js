@@ -6,25 +6,24 @@
  *
  * Usage:
  *
- *   require('nest/extensions')(
- *     'response.json',
+ *   import { use } from 'nest/extensions';
+ *   const { use } = require('nest/extensions');
+ *
+ *   use(
+ *     'request.get',
  *     'statics'
  *   );
  *
  * Extensions:
  *
- *   json:            Add JSON support for requests and responses.
- *                    Will load: request.json, response.json
+ *   request.get:     Ensure a JSON body is given and get its specific keys.
+ *                    E.g.: [name, age] = req.get('name', 'age');
  *
- *   request.json:    Get the JSON data of a request.
- *                    On JSON decoding error, throws: JSONError (HTTP 422).
- *                    E.g.: const data = req.json;
+ *   response.file:   Allow a response to send a file from a specific path.
+ *                    E.g.: res.file('statics/images/logo.png');
  *
- *   response.html:   Allow a resopnse to send HTML code.
+ *   response.html:   Allow a response to send HTML code.
  *                    E.g.: res.html('<div>Hello</div>');
- *
- *   response.json:   Allow a response to send JSON data.
- *                    E.g.: res.json({hello: 'world'});
  *
  *   response.render: Allow a response to render and serve an HTML static file.
  *                    Will load: response.html
@@ -34,19 +33,30 @@
  *                    requests with URLs starting by `/statics`.
  */
 
-const HTML        = require('nest/html');
-const Request     = require('nest/requests');
-const Response    = require('nest/responses');
-const Server      = require('nest/server');
-const validation  = require('nest/validation');
-const {HTTPError} = require('nest/errors');
+const HTML     = require('nest/html');
+const log      = require('nest/log');
+const Request  = require('nest/requests');
+const Response = require('nest/responses');
+const Server   = require('nest/server');
+const {
+	HTTPError,
+	HTTPValidationError,
+	NestError,
+	ValidationError
+} = require('nest/errors');
 const {
 	fileExtension,
 	fileRead,
 	statics
 } = require('nest/helpers');
+const {
+	validateKeys,
+	validateObject
+}  = require('nest/validation');
+
 
 const Extensions = {
+	'request.get':      request_get,
 	'request.validate': request_validate,
 	'response.file':    response_file,
 	'response.html':    response_html,
@@ -60,8 +70,35 @@ const MIMETypes = {
 	'svg':  'image/svg+xml'
 };
 
+function request_get () {
+	Request.prototype.get = function (...args) {
+		try {
+			return validateKeys(this.json, args);
+		} catch (e) {
+			if (e instanceof ValidationError) {
+				throw new HTTPValidationError(e.errors, 'missing parameters')
+			}
+			throw e;
+		}
+	}
+}
+
+function request_validate () {
+	Request.prototype.validate = function (rules) {
+		try {
+			return validateObject(this.json, rules);
+		} catch (e) {
+			if (e instanceof ValidationError) {
+				throw new HTTPValidationError(e.errors);
+			} else {
+				throw e;
+			}
+		}
+	}
+}
+
 function response_file () {
-	Response.prototype.file = async function (path, params={}) {
+	Response.prototype.file = async function (path) {
 		return await fileRead(path)
 			.then(data => {
 				const buffer    = Buffer.from(data);
@@ -89,12 +126,6 @@ function response_html () {
 	}
 }
 
-function request_validate () {
-	Request.prototype.validate = function (rules) {
-		return validation.validateObject(this.json, rules);
-	}
-}
-
 function response_render (file, params={}) {
 	response_html();
 	Response.prototype.render = async function (file, params={}) {
@@ -116,4 +147,17 @@ function statics_handler () {
 	}
 }
 
-module.exports = (...extensions) => extensions.map(e => Extensions[e]());
+function use (...extensions) {
+	extensions.map(e => {
+		const extension = Extensions[e];
+		if (extension) {
+			extension();
+		} else {
+			throw new NestError(`extension "${e}" is not available`);
+		}
+	});
+}
+
+module.exports = {
+	use
+};
