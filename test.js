@@ -8,16 +8,8 @@ const Request     = require('nest/requests');
 const Server      = require('nest/server');
 const validation  = require('nest/validation');
 
-require('nest/extensions')(
-	'request.validate'
-);
-
 const HOST = 'localhost';
 const PORT = 9000;
-
-Request.prototype.validate = function (...args) {
-	return validation.validateKeys(this.json, args);
-}
 
 const app = nest({
 	'GET': {
@@ -27,7 +19,7 @@ const app = nest({
 	},
 	'POST': {
 		'/name': (req, res) => {
-			const [name] = req.validate('name');
+			const [name] = req.get('name');
 			return res.json({name});
 		}
 	}
@@ -41,6 +33,12 @@ app.on('response', (req, res) => {
   method = method.padEnd(4, ' ');
   log.info(`${status} ${method} ${url} ${body}`);
 });
+
+app.use(
+	'request.get',
+	'request.validate',
+	'response.file',
+);
 
 app.run(HOST, PORT);
 
@@ -65,22 +63,36 @@ const sleep = (ms) => {
 }
 
 const test_extensions = () => {
-	assert.throws(() => {
-		require('nest/extensions')('dummy');
-	})
+	assert.throws(
+		() => app.use('dummy'),
+		{
+			name: 'NestError',
+			message: 'extension "dummy" is not available'
+  	}
+  );
 }
 
 const test_server = async () => {
 	const name = 'Jöë'; // Use something weird to check unicode.
   let response;
+
+  // Check unknown route.
   response = await get('/?something');
   assert(response.status == 404, 'server: not found')
+
+  // Check valid route + text response.
   response = await get('/hello', 'test');
   assert(response.status == 200 && response.text == 'hello', 'server: hello');
+
+  // Check valid route + invalid JSON payload.
   response = await post('/name', name);
   assert(response.status == 422, 'server: name (text data)');
+
+  // Check valid route + valid JSON payload.
   response = await post('/name', {name});
   assert(response.status == 200 && response.json.name == name, 'server: name (json data)');
+
+  // Check for route with unmanaged error.
 	response = await get('/fail');
 	assert(response.status == 500, 'server: fail');
 };
@@ -88,57 +100,83 @@ const test_server = async () => {
 const test_cache = async () => {
 	let data;
 	const cache = new Cache();
+
 	// Key is not there.
 	assert(!cache.has('test'), 'cache: has');
+
 	data = cache.get('test');
 	assert(data === undefined, 'cache: get (bad key)');
 	assert(!cache.has('test'), 'cache: has');
+
 	// Set a key.
 	cache.set('test', 1);
 	assert(cache.has('test') === true, 'cache: set');
+
 	// Check key.
 	assert(cache.get('test') == 1, 'cache: get');
+
 	// Remove key.
 	cache.unset('test');
+
 	//await sleep(2000);
 	assert(!cache.has('test'), 'cache: unset');
 };
 
 const test_cache_sqlite = async () => {
 	let data;
+
 	// Instance.
 	const cache = new CacheSQL('test.db');
 	assert(cache instanceof CacheSQL, 'cache-sqlite: instance');
+
 	// Clear.
   data = await cache.clear();
+
   // Get a non-existing key.
   data = await cache.get('test');
   assert(data == undefined, 'cache-sqlite: get');
+
   // Set a key.
   data = await cache.set('test', 'hello world', 1);
+
   // Check key.
   data = await cache.has('test');
   assert(data == '1', 'cache-sqlite: has');
+
   // Dump.
   data = await cache.dump();
   assert(data.length == 1, 'cache-sqlite: dump');
+
   // Get a key (during TTL).
   data = await cache.get('test');
   assert(data == 'hello world', 'cache-sqlite: get (during TTL)');
+
   // Get a key (after TTL).
   await sleep(2000);
   data = await cache.get('test');
   assert(data == undefined, 'cache-sqlite: get (after TTL)');
+
   cache.close();
 }
 
 const test_http = async () => {
 	const opts = {host: HOST, port: PORT};
-	let response = await http.unsafe(opts);
-	assert.throws(() => response.json, 'http: no json');
+	let response;
+
+	// Check for invalid JSON.
+	response = await http.unsafe(opts);
+	assert.throws(
+		() => response.json,
+		'http: invalid JSON'
+	);
+
+	// Check for valid JSON.
 	response = await http.unsafe({path: '/name', ...opts});
 	assert(response.json instanceof Object, 'http: expected json');
-	assert('name' in response.json && response.json.name == 'Joe', 'http: data not found');
+	assert(
+		'name' in response.json && response.json.name == 'Joe',
+		'http: valid JSON'
+	);
 }
 
 const test_validation = () => {
@@ -191,6 +229,24 @@ const test_validation = () => {
 		assert(errors.requiredif_is_bad[0].message == 'required if in is 2',
 			'validation: requiredif_is_good');
 	}
+
+	assert.throws(
+		() => validation.validateKeys(null, ['name']),
+		{
+			name: 'AssertError',
+			message: 'data must be an object'
+		},
+		'validation: validateKeys (null)'
+	);
+
+	assert.throws(
+		() => validation.validateKeys('test', ['name']),
+		{
+			name: 'AssertError',
+			message: 'data must be an object'
+		},
+		'validation: validateKeys (null)'
+	);
 };
 
 const main = async () => {
