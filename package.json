@@ -10,6 +10,7 @@
   },
   "exports": {
     ".": "./index.js",
+    "./assert": "./src/modules/assert.js",
     "./cache": "./src/modules/cache.js",
     "./cache-sqlite": "./src/modules/cache-sqlite.js",
     "./crypto": "./src/modules/crypto.js",
