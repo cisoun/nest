@@ -1,12 +1,14 @@
 /**
  * Assertions module.
  * @module assert
+ *
+ * Assertions only work if the ASSERT environment variable is set to '1'.
  */
 
 const { AssertError } = require('nest/errors');
 const { nop }         = require('nest/helpers');
 
-const DEBUG = process.env.DEBUG == '1';
+const ASSERT = process.env.ASSERT == '1';
 
 const assert = (condition, m = null) => {
 	if (!condition) {
@@ -28,6 +30,6 @@ const assertIsObject = (o, m = null) => {
 
 module.exports = {
 	AssertError,
-	assertIsArray: DEBUG ? assertIsArray : nop,
-	assertIsObject: DEBUG ? assertIsObject : nop
+	assertIsArray: ASSERT ? assertIsArray : nop,
+	assertIsObject: ASSERT ? assertIsObject : nop
 };

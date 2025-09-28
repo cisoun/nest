@@ -6,7 +6,7 @@
   "license": "GNU",
   "main": "index.js",
   "scripts": {
-    "test": "NODE_ENV=test node test.js"
+    "test": "NODE_ENV=test ASSERT=1 node test.js"
   },
   "exports": {
     ".": "./index.js",
