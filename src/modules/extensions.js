@@ -134,10 +134,10 @@ function response_render (file, params={}) {
 	}
 }
 
-function statics_handler () {
+function statics_handler (instance) {
 	response_file();
-	const f = Server.prototype.route;
-	Server.prototype.route = async function (req, res) {
+	const f = instance.route;
+	instance.route = async function (req, res) {
 		const path = req.path;
 		if (req.method == 'GET' && path.startsWith('/statics')) {
 			return res.file(path.slice(1));
