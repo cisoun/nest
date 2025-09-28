@@ -170,7 +170,7 @@ class Server {
 	}
 
 	use (...e) {
-		extensions.use(...e);
+		extensions.use(this, ...e);
 	}
 }
 

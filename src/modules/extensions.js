@@ -147,11 +147,19 @@ function statics_handler () {
 	}
 }
 
-function use (...extensions) {
+function register (name, callback) {
+	if (!(name in Extensions)) {
+		Extensions[name] = callback;
+	} else {
+		throw new NestError(`extension "${name}" is already registered`);
+	}
+}
+
+function use (instance, ...extensions) {
 	extensions.map(e => {
 		const extension = Extensions[e];
 		if (extension) {
-			extension();
+			extension(instance);
 		} else {
 			throw new NestError(`extension "${e}" is not available`);
 		}
@@ -159,5 +167,6 @@ function use (...extensions) {
 }
 
 module.exports = {
+	register,
 	use
 };
