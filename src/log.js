@@ -3,7 +3,7 @@
  * @module log
  */
 
-const {inspect} = require('node:util');
+const { inspect } = require('node:util');
 
 const object = (o, callback = log) => {
 	callback(inspect(o, {depth: null, colors: true}));

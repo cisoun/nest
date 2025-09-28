@@ -8,7 +8,6 @@ const {
 	assertIsObject
 } = require('nest/assert');
 const {
-	NestError,
 	ValidationError
 } = require('nest/errors');
 

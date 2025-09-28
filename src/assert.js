@@ -29,7 +29,7 @@ const assertIsObject = (o, m = null) => {
 }
 
 module.exports = {
-	AssertError,
+	assert,
 	assertIsArray: ASSERT ? assertIsArray : nop,
 	assertIsObject: ASSERT ? assertIsObject : nop
 };

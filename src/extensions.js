@@ -35,7 +35,6 @@
  */
 
 const HTML     = require('nest/html');
-const log      = require('nest/log');
 const Request  = require('nest/requests');
 const Response = require('nest/responses');
 const {

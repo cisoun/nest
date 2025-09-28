@@ -9,7 +9,6 @@ const VAR_PATTERN     = /{{\s*(\w*)\s*(\|\s*(.*))?}}/;
 
 const statics_regex = new RegExp(STATICS_PATTERN, 'ig');
 const var_regex     = new RegExp(VAR_PATTERN, 'g');
-const foreach_regex = new RegExp(FOREACH_PATTERN, 'ig');
 
 const TYPE_STRING = 'string';
 

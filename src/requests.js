@@ -3,10 +3,7 @@
  * @module requests
  */
 
-const {
-	HTTPError,
-	NestError
-} = require('nest/errors');
+const { HTTPError } = require('nest/errors');
 
 class Request {
   constructor (request, body) {

@@ -14,7 +14,6 @@
 
 const crypto       = require('crypto');
 const EventEmitter = require('node:events');
-const http         = require('http');
 const net          = require('net');
 const { Buffer }   = require('buffer');
 const { nop }      = require('nest/helpers');
@@ -57,9 +56,7 @@ class WebSocketClient extends EventEmitter {
 			headers[HEADER_CONNECTION].toLowerCase().includes(HEADER_UPGRADE)
 		) {
 			const key   = headers[HEADER_KEY];
-			const token = crypto.createHash('sha1')
-			                    .update(key + MAGIC)
-			                    .digest('base64');
+			const token = crypto.hash(key + MAGIC, 'sha1', 'base64');
 
 			const response =
 				'HTTP/1.1 101 Switching Protocols\r\n' +

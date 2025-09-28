@@ -16,6 +16,8 @@ class NestError extends Error {
 
 class AssertError extends NestError {}
 
+class CryptoError extends Error {}
+
 class HTTPError extends NestError {
 	/**
 	 * @constructor
@@ -58,6 +60,7 @@ class ValidationError extends NestError {
 
 module.exports = {
 	AssertError,
+	CryptoError,
 	HTTPError,
 	HTTPValidationError,
 	NestError,

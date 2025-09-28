@@ -14,8 +14,8 @@
  *   Check key: await cache.has('mykey');
  */
 
-const {now}          = require('nest/helpers');
-const {DatabaseSync} = require('node:sqlite');
+const { now }          = require('nest/helpers');
+const { DatabaseSync } = require('node:sqlite');
 
 const CLEAR_SQL  = 'DELETE FROM cache;';
 const CREATE_SQL = `\

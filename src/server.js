@@ -41,9 +41,7 @@ const log        = require('nest/log');
 const Request    = require('nest/requests');
 const Response   = require('nest/responses');
 const {
-	HTTPError,
-	NestError,
-	ValidationError
+	HTTPError
 } = require('nest/errors');
 
 class Server {

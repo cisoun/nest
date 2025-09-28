@@ -3,11 +3,8 @@
  * @module helpers
  */
 
-const {readFile} = require('fs/promises');
-const {
-	extname,
-	join
-} = require('path');
+const { extname }  = require('path');
+const { readFile } = require('fs/promises');
 
 const fileExtension = extname;
 const fileRead = readFile;
