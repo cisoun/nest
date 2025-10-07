@@ -41,11 +41,12 @@ app.get('/', (req, res) => {
 
 | Rule                                     | Description                                                  |
 | ---------------------------------------- | ------------------------------------------------------------ |
-| `between:<str|int>:<str|int>`            | Must be greater or equal to A and lesser or equal to B. If value is a number, A and B will be considered as numbers as well. |
+| `between:<str,int>:<str,int>`            | Must be greater or equal to A and lesser or equal to B. If value is a number, A and B will be considered as numbers as well. |
 | `defaultBool:<bool>`                     | Set default boolean value.                                   |
 | `defaultInt:<int>`                       | Set default integer value.                                   |
 | `in:A:B:C`                               | Must be either A, B, or C.                                   |
 | `number`                                 | Must be a number and will be converted as a number.          |
+| `regex:<pattern>`                        | Must match Regex pattern (without starting/trailing slashes). |
 | `required`                               | Argument is required.                                        |
 | `requiredif:<key>[:<condition>:<value>]` | Argument is required if argument `<key>` is given. Or if it fulfills `<condition>` with `<value>`.<br /><br />Conditions are:<br />- `is`: `<key>` must be `<value>`. |
 

@@ -208,6 +208,8 @@ const test_validation = () => {
 		number_good:         '1',
 		number_bad:          'a',
 		number_nan:          'NaN',
+		regex_good:          'CH',
+		regex_bad:           'CHE',
 		requiredif_is_good:  true,
 		requiredif_set_good: true,
 	};
@@ -218,37 +220,73 @@ const test_validation = () => {
 		number_good:         'number',
 		number_bad:          'number',
 		number_nan:          'number',
+		regex_good:          'regex:^[A-Z]{2}$',
+		regex_bad:           'regex:^[A-Z]{2}$',
 		required:            'required',
 		requiredif_set_good: 'requiredif:in',
 		requiredif_set_bad:  'requiredif:hello',
 		requiredif_is_good:  'requiredif:in:is:d',
 		requiredif_is_bad:   'requiredif:in:is:2',
 	};
+
 	try {
 		const b = new validation.Validator(rules);
+		assert(b instanceof validation.Validator, 'validation: Validator');
 		b.validate(data, rules);
+		assert(true, 'validation: should not pass');
 	} catch (e) {
-		const {errors} = e;
-		assert(errors.between_str[0].message == 'must be between a and c',
-			'validation: between_str');
-		assert(errors.between_int[0].message == 'must be between 0 and 10',
-			'validation: between_int');
-		assert(errors.in[0].message == 'not in [a, b, c]',
-			'validation: in');
-		assert(errors.number_bad[0].message == 'must be a number',
-			'validation: number_bad');
-		assert(errors.number_nan[0].message == 'must be a number',
-			'validation: number_nan');
-		assert(errors.required[0].message == 'required',
-			'validation: required');
-		assert(!('requiredif_set_good' in errors),
-			'validation: requiredif_is_good');
-		assert(errors.requiredif_set_bad[0].message == 'required if hello is set',
-			'validation: requiredif_set_bad');
-		assert(!('requiredif_is_good' in errors),
-			'validation: requiredif_is_good');
-		assert(errors.requiredif_is_bad[0].message == 'required if in is 2',
-			'validation: requiredif_is_good');
+		assert(e.errors !== undefined, 'validation: errors should be present');
+
+		const { errors } = e;
+
+		assert(
+			errors.between_str[0].message == 'must be between a and c',
+			'validation: between_str'
+		);
+		assert(
+			errors.between_int[0].message == 'must be between 0 and 10',
+			'validation: between_int'
+		);
+		assert(
+			errors.in[0].message == 'not in [a, b, c]',
+			'validation: in'
+		);
+		assert(
+			errors.number_bad[0].message == 'must be a number',
+			'validation: number_bad'
+		);
+		assert(
+			errors.number_nan[0].message == 'must be a number',
+			'validation: number_nan'
+		);
+		assert(
+			!('regex_good' in errors),
+			'validation: regex_good'
+		);
+		assert(
+			errors.regex_bad[0].message == 'must match pattern: ^[A-Z]{2}$',
+			'validation: regex_bad'
+		);
+		assert(
+			errors.required[0].message == 'required',
+			'validation: required'
+		);
+		assert(
+			!('requiredif_set_good' in errors),
+			'validation: requiredif_is_good'
+		);
+		assert(
+			errors.requiredif_set_bad[0].message == 'required if hello is set',
+			'validation: requiredif_set_bad'
+		);
+		assert(
+			!('requiredif_is_good' in errors),
+			'validation: requiredif_is_good'
+		);
+		assert(
+			errors.requiredif_is_bad[0].message == 'required if in is 2',
+			'validation: requiredif_is_good'
+		);
 	}
 
 	assert.throws(

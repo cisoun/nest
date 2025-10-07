@@ -79,6 +79,12 @@ const Rules = {
 		}
 	},
 
+	regex: (data, key, value, pattern) => {
+		if (!value.match(pattern)) {
+			return `must match pattern: ${pattern}`;
+		}
+	},
+
 	required: (data, key, value) => {
 		if (value === undefined) {
 			return `required`;
