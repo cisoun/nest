@@ -19,7 +19,8 @@ const app = nest({
 	'GET': {
 		'/hello': (req, res) => res.code(200).text('hello'),
 		'/name':  (req, res) => res.json({name: 'Joe'}),
-		'/fail':  (req, res) => { throw new Error('fail'); }
+		'/fail':  (req, res) => { throw new Error('fail'); },
+		'/trace': (req, res) => res.json({traceId: req.traceId})
 	},
 	'POST': {
 		'/name': (req, res) => {
@@ -31,6 +32,7 @@ const app = nest({
 
 app.use(
 	'request.get',
+	'request.trace',
 	'request.validate',
 	'response.file',
 	'response.html',
@@ -69,7 +71,7 @@ const sleep = (ms) => {
   });
 }
 
-const test_extensions = () => {
+const test_extensions = async () => {
 	// Register an extension.
 	extensions.register('test', (instance) => {
 		instance.test = () => {
@@ -91,6 +93,11 @@ const test_extensions = () => {
 		NestError,
 		'extensions: invalid extension'
   );
+
+  // Test "request.trace".
+  let response = await get('/trace');
+  const { traceId } = response.json;
+  assert(traceId !== undefined && traceId.length == 36, 'extensions: request.trace');
 }
 
 const test_server = async () => {
@@ -309,7 +316,7 @@ const test_validation = () => {
 };
 
 const main = async () => {
-	test_extensions();
+	await test_extensions();
 	await test_server();
 	await test_cache();
 	await test_cache_sqlite();

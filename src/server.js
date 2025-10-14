@@ -64,14 +64,22 @@ class Server {
 		this.server.close();
 	}
 
+	createRequest (request, data) {
+		return new Request(request, data);
+	}
+
+	createResponse (response) {
+		return new Response(response);
+	}
+
 	handle (request, response) {
 		const data = [];
 		request.on('data', chunk => {
 			data.push(chunk);
 		});
 		request.on('end', () => {
-			const req = new Request(request, data);
-			const res = new Response(response);
+			const req = this.createRequest(request, data);
+			const res = this.createResponse(response);
 			this.route(req, res)
 				.catch(e => {
 					this.onerror(e, req, res);

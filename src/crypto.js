@@ -28,6 +28,10 @@ const toBase64    = (data)       => Buffer.from(data).toString('base64');
 const toBasicAuth = (user, pass) => toBase64([user, pass].join(':'));
 const toSHA1      = (data)       => hash(data, 'sha1');
 
+const uuid4 = () => {
+	return crypto.randomUUID();
+}
+
 module.exports = {
 	fromBase64,
 	fromBasicAuth,
@@ -35,4 +39,5 @@ module.exports = {
 	toBase64,
 	toBasicAuth,
 	toSHA1
+	uuid4
 };

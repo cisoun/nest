@@ -17,6 +17,10 @@
  *   request.get:      Ensure a JSON body is given and get its specific keys.
  *                     E.g.: [name, age] = req.get('name', 'age');
  *
+ *   request.trace:    Add a unique tracing identifier to each request as
+ *                     `traceId` attribute.
+ *                     E.g.: log.info(req.traceId);
+ *
  *   request.validate: Validate the content of a request.
  *                     E.g.: req.validate({'name': 'required'});
  *
@@ -56,6 +60,7 @@ const {
 
 const Extensions = {
 	'request.get':      request_get,
+	'request.trace':    request_trace,
 	'request.validate': request_validate,
 	'response.file':    response_file,
 	'response.html':    response_html,
@@ -79,6 +84,16 @@ function request_get () {
 			}
 			throw e;
 		}
+	}
+}
+
+function request_trace (instance) {
+	const { uuid4 } = require('nest/crypto');
+	const f = instance.createRequest;
+	instance.createRequest = function (...args) {
+		const request = f(...args);
+		request.traceId = uuid4();
+		return request;
 	}
 }
 
