@@ -20,7 +20,7 @@ app.use(
 | Extension       | Description                                                  |
 | --------------- | ------------------------------------------------------------ |
 | `request.get` | Ensure a JSON body is given and get its specific keys.<br/> Example: `const [name, age] = req.get('name', 'age');` |
-| `request.trace` | Add a unique tracing identifier to each request as `traceId` attribute.<br />Example: `app.on('response', (req, res) => log.info(req.traceId));` |
+| `request.id` | Add a UUID4 identifier to each request as `id` attribute.<br />Example: `app.on('response', (req, res) => log.info(req.id));` |
 | `request.validate` | Validate the JSON body of a request.<br/>Example: `req.validate({'name': 'required'});` |
 | `response.file` | Allows to serve a file.<br />Example: `app.get('/avatar') = (req, res) => res.file('something.jpg');` |
 | `response.html` | Allows to serve an HTML response.<br/>Example: `app.get('/') = (req, res) => res.html('<b>Hi!</b>');` |

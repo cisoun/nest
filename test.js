@@ -20,7 +20,7 @@ const app = nest({
 		'/hello': (req, res) => res.code(200).text('hello'),
 		'/name':  (req, res) => res.json({name: 'Joe'}),
 		'/fail':  (req, res) => { throw new Error('fail'); },
-		'/trace': (req, res) => res.json({traceId: req.traceId})
+		'/id':    (req, res) => res.json({id: req.id})
 	},
 	'POST': {
 		'/name': (req, res) => {
@@ -32,7 +32,7 @@ const app = nest({
 
 app.use(
 	'request.get',
-	'request.trace',
+	'request.id',
 	'request.validate',
 	'response.file',
 	'response.html',
@@ -94,10 +94,34 @@ const test_extensions = async () => {
 		'extensions: invalid extension'
   );
 
-  // Test "request.trace".
-  let response = await get('/trace');
-  const { traceId } = response.json;
-  assert(traceId !== undefined && traceId.length == 36, 'extensions: request.trace');
+	let data, response;
+
+  // Test - request.id
+	{
+	  response = await get('/id');
+	  data = response.json;
+
+	  assert(
+	  	'id' in data,
+	  	'extensions: request.id (existence check)'
+	  );
+
+	  const firstId = data.id;
+	  assert(
+	  	firstId !== undefined&& firstId.length == 36,
+	  	'extensions: request.id (attribute check)'
+	  );
+
+	  response = await get('/id');
+	  data = response.json;
+	  const secondId = data.id;
+	  assert(
+	  	secondId !== undefined
+	  	&& secondId.length == 36
+	  	&& firstId.localeCompare(secondId) !== 0,
+	  	'extensions: request.id (uniqueness check)'
+	  );
+	}
 }
 
 const test_server = async () => {

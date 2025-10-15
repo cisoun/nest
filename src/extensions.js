@@ -17,12 +17,14 @@
  *   request.get:      Ensure a JSON body is given and get its specific keys.
  *                     E.g.: [name, age] = req.get('name', 'age');
  *
- *   request.trace:    Add a unique tracing identifier to each request as
- *                     `traceId` attribute.
- *                     E.g.: log.info(req.traceId);
+ *   request.id:       Add a UUID4 identifier to each request as
+ *                     `id` attribute.
+ *                     E.g.: log.info(req.id);
  *
  *   request.validate: Validate the content of a request.
+ *                     Expects an object or or a Validator instance.
  *                     E.g.: req.validate({'name': 'required'});
+ *                     E.g.: req.validate(UserValidator);
  *
  *   response.file:    Allow a response to send a file from a specific path.
  *                     E.g.: res.file('statics/images/logo.png');
@@ -60,7 +62,7 @@ const {
 
 const Extensions = {
 	'request.get':      request_get,
-	'request.trace':    request_trace,
+	'request.id':       request_id,
 	'request.validate': request_validate,
 	'response.file':    response_file,
 	'response.html':    response_html,
@@ -87,12 +89,12 @@ function request_get () {
 	}
 }
 
-function request_trace (instance) {
+function request_id (instance) {
 	const { uuid4 } = require('nest/crypto');
 	const f = instance.createRequest;
 	instance.createRequest = function (...args) {
 		const request = f(...args);
-		request.traceId = uuid4();
+		request.id = uuid4();
 		return request;
 	}
 }
@@ -100,7 +102,11 @@ function request_trace (instance) {
 function request_validate () {
 	Request.prototype.validate = function (rules) {
 		try {
-			return validateObject(this.json, rules);
+			if (rules instanceof Validator) {
+				return rules.validate(this.json);
+			} else {
+				return validateObject(this.json, rules);
+			}
 		} catch (e) {
 			if (e instanceof ValidationError) {
 				throw new HTTPValidationError(e.errors);
@@ -133,7 +139,7 @@ function response_file () {
 }
 
 function response_html () {
-	Response.prototype.html = function (data, params={}) {
+	Response.prototype.html = function (data, params = {}) {
 		this.base.setHeader('Content-Type', 'text/html; charset=utf-8');
 		this.base.write(HTML.render(data, params));
 		return this;
