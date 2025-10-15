@@ -83,7 +83,7 @@ function request_get () {
 			return validateKeys(this.json, args);
 		} catch (e) {
 			if (e instanceof ValidationError) {
-				throw new HTTPValidationError(e.errors, 'missing parameters')
+				throw new HTTPValidationError(e.errors)
 			}
 			throw e;
 		}

@@ -16,7 +16,7 @@ class NestError extends Error {
 
 class AssertError extends NestError {}
 
-class CryptoError extends Error {}
+class CryptoError extends NestError {}
 
 class HTTPError extends NestError {
 	/**
@@ -26,6 +26,7 @@ class HTTPError extends NestError {
 	 */
 	constructor (code = 400, message=null, ...args) {
 		super(message, ...args);
+		this.name = "Error";
 		this.code = code;
 	}
 
@@ -41,6 +42,7 @@ class HTTPError extends NestError {
 class HTTPValidationError extends HTTPError {
 	constructor (errors, message = 'validation failed') {
 		super(422, message);
+		this.name = "ValidationError";
 		this.errors = errors;
 	}
 
