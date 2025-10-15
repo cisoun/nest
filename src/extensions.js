@@ -56,7 +56,8 @@ const {
 } = require('nest/helpers');
 const {
 	validateKeys,
-	validateObject
+	validateObject,
+	Validator
 }  = require('nest/validation');
 
 

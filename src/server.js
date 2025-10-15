@@ -34,15 +34,13 @@
  *   response (req, res):        Server has sent a response to a client.
  */
 
-const assert     = require('node:assert');
-const extensions = require('nest/extensions');
-const http       = require('http');
-const log        = require('nest/log');
-const Request    = require('nest/requests');
-const Response   = require('nest/responses');
-const {
-	HTTPError
-} = require('nest/errors');
+const assert        = require('node:assert');
+const extensions    = require('nest/extensions');
+const http          = require('http');
+const log           = require('nest/log');
+const Request       = require('nest/requests');
+const Response      = require('nest/responses');
+const { HTTPError } = require('nest/errors');
 
 class Server {
 	routes = {};
@@ -74,9 +72,7 @@ class Server {
 
 	handle (request, response) {
 		const data = [];
-		request.on('data', chunk => {
-			data.push(chunk);
-		});
+		request.on('data', (chunk) => data.push(chunk));
 		request.on('end', () => {
 			const req = this.createRequest(request, data);
 			const res = this.createResponse(response);

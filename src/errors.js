@@ -26,14 +26,14 @@ class HTTPError extends NestError {
 	 */
 	constructor (code = 400, message=null, ...args) {
 		super(message, ...args);
-		this.code    = code;
+		this.code = code;
 	}
 
 	toJSON () {
 		return {
-			code: this.code,
+			code:    this.code,
 			message: this.message,
-			name: this.name,
+			name:    this.name,
 		};
 	}
 }
@@ -45,7 +45,7 @@ class HTTPValidationError extends HTTPError {
 	}
 
 	toJSON () {
-		const data = super.toJSON();
+		const data  = super.toJSON();
 		data.errors = this.errors;
 		return data;
 	}

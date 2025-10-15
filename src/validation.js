@@ -27,7 +27,7 @@ const TYPE_NUMBER    = 'number';
  * MyValidatior.validate({name: 'Joe'});
  *
  * @param {Object} rules - Set of rules.
- * @returns {function)   Instance of validator.
+ * @returns {function)     Instance of validator.
  */
 function Validator (rules) {
 	assertIsObject(rules, `rules must be an object, got ${typeof(rules)}`);
@@ -112,12 +112,14 @@ const Rules = {
  * @returns {Array}          Array of operations for each rule.
  */
 const decode = (rules) => {
-	/* Tricky operation.
-	 * For
+	/*
+	 * Tricky operation.
+	 * For:
 	 *   {'name': 'callback1:arg1:arg2|callback2:arg1:arg2'}
-	 * Should return something like this:
+	 * we should return something like this:
 	 *   [ ['name', [callback1, arg1, arg2], [callback2, arg1, arg2] ] ]
 	 */
+	assertIsObject(rules, 'rules must be an object');
 	return Object.entries(rules)
 		.map(([k, v])    => [k, ...v.split(RULE_SEPARATOR)
 		.map((r)         => r.split(ARG_SEPARATOR))
@@ -167,9 +169,9 @@ function validate (validator, data) {
  *
  * @param   {Object} data     - Data of the request.
  * @param   {Array}  keys     - List of parameters to validate.
- * @throws  {AssertError}     Assertion errors..
- * @throws  {ValidationError} Thrown if some parameters are missing.
- * @returns {Array}           Array containing needed parameters.
+ * @throws  {AssertError}       Assertion errors..
+ * @throws  {ValidationError}   Thrown if some parameters are missing.
+ * @returns {Array}             Array containing needed parameters.
  */
 function validateKeys (data, keys) {
 	assertIsObject(data, 'data must be an object');
@@ -186,7 +188,7 @@ function validateKeys (data, keys) {
 		const errors = Object.fromEntries(e.map(i => [i, ['required']]));
 		throw new ValidationError(errors);
 	}
-	return keys.map(e => data[e]); // Return needed data.
+	return keys.map(k => data[k]); // Return needed data.
 }
 
 /**
@@ -206,8 +208,8 @@ function validateKeys (data, keys) {
  *
  * @param  {Object} obj      - Object to validate.
  * @param  {Object} rules    - Set of rules.
- * @thrown {ValidationError} Thrown if the validation has failed.
- * @return {Object}          Object provided.
+ * @thrown {ValidationError}   Thrown if the validation has failed.
+ * @return {Object}            Object provided.
  */
 function validateObject (data, rules) {
 	return (new Validator(rules)).validate(data);
@@ -218,6 +220,5 @@ module.exports = {
 	validateKeys,
 	validateObject,
 	Rules,
-	Validator,
-	ValidationError
+	Validator
 };
