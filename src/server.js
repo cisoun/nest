@@ -41,21 +41,23 @@ const log           = require('nest/log');
 const Request       = require('nest/requests');
 const Response      = require('nest/responses');
 const { HTTPError } = require('nest/errors');
+const Router        = require('nest/router');
 
 class Server {
 	routes = {};
 
 	constructor (routes = {}) {
-		this.initializeRoutes(routes);
+		this.initializeRouter(routes);
 		this.initializeServer();
 		this.handleTermination();
 	}
 
-	delete (path, callback) { this.register('DELETE', path, callback); }
-	get    (path, callback) { this.register('GET',    path, callback); }
-	patch  (path, callback) { this.register('PATCH',  path, callback); }
-	post   (path, callback) { this.register('POST',   path, callback); }
-	put    (path, callback) { this.register('PUT',    path, callback); }
+	delete (path, callback) { this.router.register('DELETE', path, callback); }
+	get    (path, callback) { this.router.register('GET',    path, callback); }
+	patch  (path, callback) { this.router.register('PATCH',  path, callback); }
+	post   (path, callback) { this.router.register('POST',   path, callback); }
+	put    (path, callback) { this.router.register('PUT',    path, callback); }
+	head   (path, callback) { this.router.register('HEAD',   path, callback); }
 
 	close () {
 		this.onclose();
@@ -64,18 +66,23 @@ class Server {
 
 	handle (req, res) {
 		const data = [];
-			this.route(req, res)
-				.catch(e => {
-					this.onerror(e, req, res);
-				})
-				.finally(() => {
-					this.onresponse(req, res);
-					res.end();
-				});
 		req.on('data', (chunk) => data.push(chunk));
 		req.on('end', async () => {
 			req.body = data;
+			// Request handling.
+			try {
+				await this.router.handle(req, res)
+			} catch (e) {
+				this.onerror(e, req, res);
+			} finally {
+				this.onresponse(req, res);
+				res.end();
+			}
 		});
+	}
+
+	handleLost (req, res) {
+		this.onlost(req, res);
 	}
 
 	handleTermination () {
@@ -86,11 +93,13 @@ class Server {
 		process.once('SIGTERM', this.close.bind(this));
 	}
 
-	initializeRoutes (routes) {
+	initializeRouter (routes) {
 		assert(routes instanceof Object, 'routes must be an object');
-		for (const [method, mroutes] of Object.entries(routes)) {
-			for (const [path, callback] of Object.entries(mroutes)) {
-				this.register(method, path, callback);
+		this.router = new Router();
+		this.router.fallback = this.handleLost.bind(this);
+		for (const [method, route] of Object.entries(routes)) {
+			for (const [path, callback] of Object.entries(route)) {
+				this.router.register(method, path, callback);
 			}
 		}
 	}
@@ -132,41 +141,18 @@ class Server {
 		log.info(`${req.ip} ${res.status} ${req.method} ${req.url}`);
 	}
 
-	/**
-	 * Register an endpoint.
-	 * @param {string}   method   - Method of the endpoint (by defalut: 'GET').
-	 * @param {string}   path     - Path of the endpoint.
-	 * @param {function} callback - Endpoint handler.
-	 *                              Signature is `(req, res) => {}`.
-	 */
-	register (method, path, callback) {
-		assert(callback instanceof Function, `callback for "${path}" not a function`);
-		if (!(method in this.routes)) {
-			this.routes[method] = {};
-		}
-		path = path.replace('*', '.*');
-		this.routes[method][path] = callback;
-	}
-
-	async route (req, res) {
-		const {method, path} = req;
-		if (method in this.routes) {
-			const routes = this.routes[method];
-			for (const route in routes) {
-				if (path.match(`^${route}$`)) {
-					return routes[route](req, res);
-				}
-			}
-		}
-		return this.onlost(req, res);
-	}
-
 	run (host, port) {
 		this.server.listen(port, host, () => this.onlisten(host, port));
 	}
 
 	use (...e) {
-		extensions.use(this, ...e);
+		e.forEach((fn) => {
+			if (fn.length == 1) {
+				extensions.use(this, fn);
+			} else if (fn.length == 3) {
+				this.router.use(fn);
+			}
+		});
 	}
 }
 
