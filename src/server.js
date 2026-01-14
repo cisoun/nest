@@ -144,7 +144,7 @@ class Server {
 		log.info(`${req.ip} ${res.status} ${req.method} ${req.url}`);
 	}
 
-	run (host, port) {
+	run (port, host = 'localhost') {
 		this.server.listen(port, host, () => this.onlisten(host, port));
 	}
 
