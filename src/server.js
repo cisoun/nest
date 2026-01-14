@@ -69,6 +69,9 @@ class Server {
 		req.on('data', (chunk) => data.push(chunk));
 		req.on('end', async () => {
 			req.body = data;
+			// Circular references.
+			req.res = res;
+			res.req = req;
 			// Request handling.
 			try {
 				await this.router.handle(req, res)

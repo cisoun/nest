@@ -7,7 +7,7 @@ const http = require('node:http');
 
 class Response extends http.ServerResponse {
 	body = null;
-	res = null;
+	res  = null;
 
 	code (code) {
 		this.statusCode = code;

@@ -7,9 +7,9 @@ const http = require('node:http');
 const { HTTPError } = require('nest/errors');
 
 class Request extends http.IncomingMessage {
-	body = null;
+	body   = null;
 	params = {};
-	req = null;
+	req    = null;
 
 	get ip () {
 		return this.socket.remoteAddress;
