@@ -10,5 +10,6 @@
 | [extensions](Extensions.md)    | Extensions manager.     |
 | [html](HTML.md)                | HTML templating engine. |
 | [http](HTTP.md)                | HTTP client.            |
+| [router](Router.md)            | Router module.          |
 | [validation](Validation.md)    | Validation utilities.   |
 | [websocket](WebSocket.md)      | WebSocket server.       |

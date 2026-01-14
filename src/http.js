@@ -2,13 +2,20 @@
  * HTTP client module.
  * @module http
  *
- * Note: since Node.js v18, it is advised to use the Fetch API instead.
+ * NOTE: since Node.js v18, it is advised to use the Fetch API instead.
  *
  * Usage:
  *
  *   http.get(url, options):            Shortcut for GET requests.
  *   http.post(url, options):           Shortcut for POST requests.
  *   http.request(url, options):        Generic request.
+ *
+ *   http.get('https://myapi.com/api', {
+ *     headers: { 'Authorization': 'Basic ...' }
+ *   }).then(response => {
+ *     const data = response.json;
+ *     ...
+ *   });
  *
  * Options:
  *

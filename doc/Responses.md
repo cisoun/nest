@@ -1,6 +1,7 @@
 # Responses
 
 >  Module: `nest/responses`
+>  Inherits: `http.ServerResponse`
 
 ## Usage
 
@@ -12,9 +13,10 @@ app.get('/', (req, res) => {
 
 ## Properties
 
-| Property | Description                   |
-| -------- | ----------------------------- |
-| `status` | Returns the HTTP status code. |
+| Property | Description         |
+| -------- | ------------------- |
+| `req`    | Associated request. |
+| `status` | HTTP status code.   |
 
 ## Methods
 
@@ -26,6 +28,6 @@ All methods can be chained.
 | ------------ | ------------------------------------------------------------ |
 | `code(code)` | Defines a HTTP status code.                                  |
 | `end()`      | Sends the response. Usually not necessary to call as the server already handles it. |
-| `file(path)` | Sends a file to the client. Available through the `response.file` [extension](Extensions.md). |
+| `file(path)` | Sends a file to the client. Available through the `responseFile` [extension](Extensions.md). |
 | `json(data)` | Sends a JSON data.                                           |
 | `text(text)` | Defines a text to send.                                      |

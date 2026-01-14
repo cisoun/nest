@@ -8,10 +8,16 @@ Nest provides built-in extensions and a way to create your owns.
 ## Usage
 
 ```js
+const {
+  requestGet,
+  responseRender
+} = require('nest/extensions');
+
 const app = nest();
+
 app.use(
-  'request.get',
-  'response.render'
+  requestGet,
+  responseRender
 );
 ```
 
@@ -19,15 +25,46 @@ app.use(
 
 | Extension       | Description                                                  |
 | --------------- | ------------------------------------------------------------ |
-| `request.get` | Ensure a JSON body is given and get its specific keys.<br/> Example: `const [name, age] = req.get('name', 'age');` |
-| `request.id` | Add a UUID4 identifier to each request as `id` attribute.<br />Example: `app.on('response', (req, res) => log.info(req.id));` |
-| `request.validate` | Validate the JSON body of a request.<br/>Example: `req.validate({'name': 'required'});` |
-| `response.file` | Allows to serve a file.<br />Example: `app.get('/avatar') = (req, res) => res.file('something.jpg');` |
-| `response.html` | Allows to serve an HTML response.<br/>Example: `app.get('/') = (req, res) => res.html('<b>Hi!</b>');` |
-| `response.render` | Allows to serve an HTML page from the `statics` folder with parameters.<br />Example: `app.get('/about') = (req, res) => res.render('about', {name: 'Georges'}));` |
+| `apifs` | Build an API from the `api` folder of the app. |
+| `requestGet` | Ensure a JSON body is given and get its specific keys.<br/> Example: `const [name, age] = req.get('name', 'age');` |
+| `requestId` | Add a UUID4 identifier to each request as `id` attribute.<br />Example: `app.on('response', (req, res) => log.info(req.id));` |
+| `requestValidate` | Validate the JSON body of a request.<br/>Example: `req.validate({'name': 'required'});` |
+| `responseFile` | Allows to serve a file.<br />Example: `app.get('/avatar') = (req, res) => res.file('something.jpg');` |
+| `responseHtml` | Allows to serve an HTML response.<br/>Example: `app.get('/') = (req, res) => res.html('<b>Hi!</b>');` |
+| `responseRender` | Allows to serve an HTML page from the `statics` folder with parameters.<br />Example: `app.get('/about') = (req, res) => res.render('about', {name: 'Georges'}));` |
 | `statics` | Allow the server to serve static files from the `statics` folder. |
 
-### response.render
+### apifs
+
+This extensions will translate the `api` folder into an API.
+
+> [!WARNING]
+> The build process is asynchronous!
+
+For instance, paths will be translated as below:
+- `api/users/index.js` –> `/api/users`
+- `api/users/[id].js`  –> `/api/users/<id>`
+
+Example:
+
+```js
+// File: api/users/[id].js
+
+// Endpoint: GET /api/users/<id>
+exports.GET = (req, res) => {
+  const { id } = req.params;
+  return users.getById(id);
+}
+
+// Endpoint: PATCH /api/users/<id>
+exports.PATCH = (req, res) => {
+  const { id } = req.params;
+  const user = users.getById(id);
+  return user.update({ req.json });
+}
+```
+
+### responseRender
 
 Let's say you have `/statics/about.html` with the following content:
 
@@ -69,7 +106,7 @@ This means, every GET request pointing to `/statics/<path>` will return the cont
 
 The approach is pretty basic: modify the prototypes of Nest's internal objects.
 
-You can also use the `register(name, (instance) => {})` method to add a custom extension into Nest so you can load it through the `use` method of your Nest instance. This is especially useful when an extension has to alterate a specific Nest instance.
+An extension can be implemented by calling `app.use((instance) => { ... })` where `instance` is the server instance.
 
 ### Examples
 
@@ -77,35 +114,18 @@ You can also use the `register(name, (instance) => {})` method to add a custom e
 const nest = require('nest');
 const extensions = require('nest/extensions');
 
-// Add a guard to ensure the "Authorization" header is set to each requests.
-function guard (instance) {
-	const f = instance.route;
-	instance.route = async function (req, res) {
-		const path = req.path;
-		if ('Authorization' in req.headers) {
-			return res.text('OK');
-		} else {
-			return res.code(403).text('No authorization provided');
-		}
-	}
-}
-
 // Add JSON responses.
-function response_json () {
+function responseJSON (instance) {
   Response.prototype.json = function (data) {
-    this.base.setHeader('Content-Type', 'application/json');
-    this.base.write(JSON.stringify(data));
+    this.setHeader('Content-Type', 'application/json');
+    this.write(JSON.stringify(data));
     return this;
   }
 }
 
-extensions.register('guard', guard);
-extensions.register('response.json', response_json);
-
 const app = nest();
 
 app.use(
-  'guard',
-  'response.json'
+  responseJSON
 );
 ```

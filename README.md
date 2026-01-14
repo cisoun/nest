@@ -12,9 +12,16 @@ A lightweight web server built on top of Node.js with zero dependencies and exte
 ```js
 import nest from 'nest';
 const app = nest();
+
+app.use(async (req, res, next) => {
+  console.log(`Requested: ${req.path}`);
+  await next();
+});
+
 app.get('/api/hello', (req, res) => {
   res.code(200).json({message: 'Hello!'});
 });
+
 app.run('localhost', 3000);
 ```
 
@@ -28,6 +35,7 @@ app.run('localhost', 3000);
  - HTML templating engine ([nest/html](doc/HTML.md))
  - HTTP client ([nest/http](doc/HTTP.md))
  - Logging ([nest/log](doc/Log.md))
+ - Router and middlewares ([nest/router](doc/Router.md))
  - Data validation ([nest/validation](doc/Validation.md))
  - WebSocket server ([nest/websocket](doc/WebSocket.md))
 
