@@ -62,20 +62,8 @@ class Server {
 		this.server.close();
 	}
 
-	createRequest (request, data) {
-		return new Request(request, data);
-	}
-
-	createResponse (response) {
-		return new Response(response);
-	}
-
-	handle (request, response) {
+	handle (req, res) {
 		const data = [];
-		request.on('data', (chunk) => data.push(chunk));
-		request.on('end', () => {
-			const req = this.createRequest(request, data);
-			const res = this.createResponse(response);
 			this.route(req, res)
 				.catch(e => {
 					this.onerror(e, req, res);
@@ -84,6 +72,9 @@ class Server {
 					this.onresponse(req, res);
 					res.end();
 				});
+		req.on('data', (chunk) => data.push(chunk));
+		req.on('end', async () => {
+			req.body = data;
 		});
 	}
 
@@ -105,7 +96,10 @@ class Server {
 	}
 
 	initializeServer () {
-		this.server = http.createServer(this.handle.bind(this));
+		this.server = http.createServer({
+			IncomingMessage: Request,
+			ServerResponse: Response
+		}, this.handle.bind(this));
 	}
 
 	on (event, callback) {

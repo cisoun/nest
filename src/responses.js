@@ -3,33 +3,36 @@
  * @module responses
  */
 
-class Response {
-	constructor (response) {
-		this.base = response;
-	}
+const http = require('node:http');
+
+class Response extends http.ServerResponse {
+	body = null;
+	res = null;
 
 	code (code) {
-		this.base.statusCode = code;
+		this.statusCode = code;
 		return this;
 	}
 
 	end () {
-		this.base.end();
+		super.end(this.body);
 	}
 
 	json (data) {
-		this.base.setHeader('Content-Type', 'application/json');
-		this.base.write(JSON.stringify(data));
+		this.setHeader('Content-Type', 'application/json');
+		this.body = JSON.stringify(data);
 		return this;
 	}
 
 	text (text) {
-		this.base.setHeader('Content-Type', 'text/plain');
-		this.base.write(text);
+		this.setHeader('Content-Type', 'text/plain');
+		this.body = text;
 		return this;
 	}
 
-	get status () { return this.base.statusCode; }
+	get status  () {
+		return this.statusCode;
+	}
 }
 
 module.exports = Response;
