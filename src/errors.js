@@ -21,20 +21,21 @@ class CryptoError extends NestError {}
 class HTTPError extends NestError {
 	/**
 	 * @constructor
-	 * @param {integer} [code=400]     - HTTP error code.
+	 * @param {integer} [status=400]     - HTTP error code.
 	 * @param {string}  [message=null] - Message of the error.
 	 */
-	constructor (code = 400, message=null, ...args) {
+	constructor (status = 400, message = null, ...args) {
 		super(message, ...args);
-		this.name = "Error";
-		this.code = code;
+		this.name   = 'HTTPError';
+		this.status = status;
 	}
 
 	toJSON () {
 		return {
-			code:    this.code,
-			message: this.message,
-			name:    this.name,
+			error: {
+				name:    this.name,
+				message: this.message
+			}
 		};
 	}
 }
@@ -42,13 +43,13 @@ class HTTPError extends NestError {
 class HTTPValidationError extends HTTPError {
 	constructor (errors, message = 'validation failed') {
 		super(422, message);
-		this.name = "ValidationError";
-		this.errors = errors;
+		this.name   = 'ValidationError';
+		this.detail = errors;
 	}
 
 	toJSON () {
-		const data  = super.toJSON();
-		data.errors = this.errors;
+		const data = super.toJSON();
+		data.error.detail = this.detail;
 		return data;
 	}
 }
