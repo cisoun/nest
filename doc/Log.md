@@ -20,5 +20,6 @@ log.info('Hello world!'); // [2024-06-04T07:04:31.445Z] INFO: Hello world!
 | `error(...args)` | Outputs an error message to the console. Similar to `console.error`. |
 | `info(...args)` | Outputs an informational message to the console. Similar to `console.info`. |
 | `log(..args)` | Outputs a message to the console. Similar to `console.log`. |
+| `object(object, callback = log)` | Outputs an object structure, Use the `callback` parameter to pass one of the level related function (e.g.: `info`). |
 | `print(tag, callback, ...args)` | Formats the output. Override this to change the logging format. |
 | `warn(...args)` | Outputs a warning message to the console. Similar to `console.warn`. |

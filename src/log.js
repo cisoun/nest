@@ -6,7 +6,7 @@
 const { inspect } = require('node:util');
 
 const object = (o, callback = log) => {
-	callback(inspect(o, {depth: null, colors: true}));
+	callback(inspect(o, {depth: null, colors: true, compact: false}));
 }
 
 const format = (tag, callback, ...args) => {
