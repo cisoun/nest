@@ -44,6 +44,7 @@ const { HTTPError } = require('nest/errors');
 const Router        = require('nest/router');
 
 class Server {
+	router = null;
 	routes = {};
 
 	constructor (routes = {}) {
