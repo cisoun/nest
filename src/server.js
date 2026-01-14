@@ -40,8 +40,12 @@ const http          = require('http');
 const log           = require('nest/log');
 const Request       = require('nest/requests');
 const Response      = require('nest/responses');
-const { HTTPError } = require('nest/errors');
 const Router        = require('nest/router');
+const {
+	HTTPError,
+	NestError
+} = require('nest/errors');
+
 
 class Server {
 	router = null;
@@ -126,10 +130,12 @@ class Server {
 
 	onerror (e, req, res) {
 		if (e instanceof HTTPError) {
-			res.code(e.code).json(e.toJSON());
+			res.code(e.status).json(e);
 		} else {
+			res.code(e.status ?? 500).text(e.message);
+		}
+		if (!(e instanceof NestError)) {
 			log.error(e.stack); // Unmanaged, should be logged.
-			res.code(500);
 		}
 	}
 
@@ -138,7 +144,7 @@ class Server {
 	}
 
 	onlost (req, res) {
-		res.code(404);
+		res.code(404).text('not found');
 	}
 
 	onresponse (req, res) {
