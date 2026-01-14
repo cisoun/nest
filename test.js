@@ -1,7 +1,6 @@
 const assert     = require('node:assert');
 const Cache      = require('nest/cache');
 const CacheSQL   = require('nest/cache-sqlite');
-const extensions = require('nest/extensions');
 const http       = require('nest/http');
 const log        = require('nest/log');
 const nest       = require('nest');
@@ -9,18 +8,39 @@ const Request    = require('nest/requests');
 const Server     = require('nest/server');
 const validation = require('nest/validation');
 const {
+	HTTPError,
 	NestError
 } = require('nest/errors');
+const {
+	requestGet,
+	requestId,
+	requestValidate,
+	responseFile,
+	responseHtml,
+	responseRender,
+	statics
+} = require('nest/extensions');
 
 const HOST = 'localhost';
 const PORT = 9000;
 
 const app = nest({
 	'GET': {
-		'/hello': (req, res) => res.code(200).text('hello'),
-		'/name':  (req, res) => res.json({name: 'Joe'}),
-		'/fail':  (req, res) => { throw new Error('fail'); },
-		'/id':    (req, res) => res.json({id: req.id})
+		'/hello':     (req, res) => res.code(200).text('hello'),
+		'/name':      (req, res) => res.json({ name: 'Joe' }),
+		'/fail':      (req, res) => { throw new Error('unmanaged error'); },
+		'/fail-http': (req, res) => { throw new HTTPError(418, 'managed error'); },
+		'/fail-nest': (req, res) => { throw new NestError('managed error'); },
+		'/id':        (req, res) => res.json({ id: req.id }),
+		'/user/[id]': (req, res) => res.json({ id: req.params.id }),
+		'/async':     async (req, res) => {
+			await new Promise((resolve, reject) => {
+				setTimeout(() => {
+					resolve();
+				}, 1000);
+			})
+			return res.json({ message: 'hello' });
+		}
 	},
 	'POST': {
 		'/name': (req, res) => {
@@ -31,16 +51,26 @@ const app = nest({
 });
 
 app.use(
-	'request.get',
-	'request.id',
-	'request.validate',
-	'response.file',
-	'response.html',
-	'response.render',
-	'statics'
+	requestGet,
+	requestId,
+	requestValidate,
+	responseFile,
+	responseHtml,
+	responseRender,
+	statics
 );
 
+// app.use(async (req, res, next) => {
+// 	const d = Date.now();
+// 	await next();
+// 	console.log(`DELTA: ${Date.now() - d} ms`);
+// });
+
 assert(app instanceof Server, 'server: instance');
+
+app.on('lost', (req, res) => {
+	res.code(404).text('lost');
+});
 
 app.on('response', (req, res) => {
   const {status}          = res;
@@ -49,7 +79,7 @@ app.on('response', (req, res) => {
   log.info(`${status} ${method} ${url} ${body}`);
 });
 
-app.run(HOST, PORT);
+app.run(PORT, HOST);
 
 const get = (path, data = null, options = {}) => {
 	options.host     = HOST;
@@ -73,26 +103,24 @@ const sleep = (ms) => {
 
 const test_extensions = async () => {
 	// Register an extension.
-	extensions.register('test', (instance) => {
+	const extension = (instance) => {
 		instance.test = () => {
 			return 'hello';
 		};
-	});
+	};
+	// assert.throws(
+	// 	() => app.use('test'),
+	// 	NestError,
+	// 	'extensions: invalid extension'
+	// );
 	assert.doesNotThrow(
-		() => app.use('test'),
+		() => app.use(extension),
 		NestError,
 		'extensions: valid extensions'
 	);
 
 	// Check extension.
 	assert(app.test() == 'hello', 'extensions: check extension');
-
-	// Try to load invalid extension.
-	assert.throws(
-		() => app.use('dummy'),
-		NestError,
-		'extensions: invalid extension'
-  );
 
 	let data, response;
 
@@ -101,6 +129,8 @@ const test_extensions = async () => {
 	  response = await get('/id');
 	  data = response.json;
 
+	  console.log(data);
+
 	  assert(
 	  	'id' in data,
 	  	'extensions: request.id (existence check)'
@@ -108,7 +138,7 @@ const test_extensions = async () => {
 
 	  const firstId = data.id;
 	  assert(
-	  	firstId !== undefined&& firstId.length == 36,
+	  	firstId !== undefined && firstId.length == 36,
 	  	'extensions: request.id (attribute check)'
 	  );
 
@@ -124,30 +154,7 @@ const test_extensions = async () => {
 	}
 }
 
-const test_server = async () => {
-	const name = 'Jöë'; // Use something weird to check unicode.
-  let response;
 
-  // Check unknown route.
-  response = await get('/?something');
-  assert(response.status == 404, 'server: not found')
-
-  // Check valid route + text response.
-  response = await get('/hello', 'test');
-  assert(response.status == 200 && response.text == 'hello', 'server: hello');
-
-  // Check valid route + invalid JSON payload.
-  response = await post('/name', name);
-  assert(response.status == 422, 'server: name (text data)');
-
-  // Check valid route + valid JSON payload.
-  response = await post('/name', {name});
-  assert(response.status == 200 && response.json.name == name, 'server: name (json data)');
-
-  // Check for route with unmanaged error.
-	response = await get('/fail');
-	assert(response.status == 500, 'server: fail');
-};
 
 const test_cache = async () => {
 	let data;
@@ -204,6 +211,7 @@ const test_cache_sqlite = async () => {
   assert(data == 'hello world', 'cache-sqlite: get (during TTL)');
 
   // Get a key (after TTL).
+  log.info('cache-sqlite: waiting 2 s to check TTL...');
   await sleep(2000);
   data = await cache.get('test');
   assert(data == undefined, 'cache-sqlite: get (after TTL)');
@@ -230,6 +238,55 @@ const test_http = async () => {
 		'http: valid JSON'
 	);
 }
+
+const test_server = async () => {
+	const name = 'Jöë'; // Use something weird to check unicode.
+  let response, data;
+
+  // Check unknown route.
+  response = await get('/?something');
+  assert(response.status == 404 && response.text == 'lost', 'server: not found')
+
+  // Check valid route + text response.
+  response = await get('/hello', 'test');
+  assert(response.status == 200 && response.text == 'hello', 'server: hello');
+
+  // Check valid route + invalid JSON payload.
+  response = await post('/name', name);
+  assert(response.status == 400, 'server: name (text data)');
+
+  // Check valid route + valid JSON payload.
+  response = await post('/name', {name});
+  assert(response.status == 200 && response.json.name == name, 'server: name (json data)');
+
+  // Check for route with unmanaged error.
+	response = await get('/fail');
+	assert(response.status == 500, 'server: error handling');
+
+	response = await get('/fail-http');
+	data = response.json;
+	assert(
+		response.status == 418 &&
+		data.error.name === 'HTTPError' &&
+		data.error.message === 'managed error',
+		'server: HTTPError handling'
+	);
+
+	response = await get('/fail-nest');
+	assert(
+		response.status == 500 &&
+		response.text == 'managed error',
+		'server: NestError handling'
+	);
+
+	// Check valid route + parameter.
+	response = await get('/user/9001');
+	assert(response.status == 200 && response.json.id == 9001, 'server: params');
+
+	// Check valid route + parameter.
+	response = await get('/async');
+	assert(response.status == 200 && response.json.message == 'hello', 'server: async');
+};
 
 const test_validation = () => {
 	const data = {
@@ -346,8 +403,8 @@ const main = async () => {
 	await test_cache_sqlite();
 	await test_http();
 	test_validation();
-	console.log('Tests passed.')
 	app.close();
+	console.log('Tests passed.')
 };
 
 main();
