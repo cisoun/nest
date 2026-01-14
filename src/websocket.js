@@ -140,7 +140,7 @@ class WebSocketClient extends EventEmitter {
 
 /**
  * Simple WebSocket server.
- * @class WebSocket
+ * @class WebSocketServer
  *
  * Events:
  *
@@ -149,7 +149,7 @@ class WebSocketClient extends EventEmitter {
  *   listen  (host, port):     Server has started listening.
  *   sent    (data, encoding): A message has been sent.
  */
-class WebSocket extends EventEmitter {
+class WebSocketServer extends EventEmitter {
 	constructor () {
 		super();
 		this.clients = [];
@@ -180,6 +180,7 @@ class WebSocket extends EventEmitter {
 }
 
 module.exports = {
-	WebSocket,
-	WebSocketClient
+	WebSocket: WebSocketServer,
+	WebSocketClient,
+	WebSocketServer
 };

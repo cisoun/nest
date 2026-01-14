@@ -9,7 +9,7 @@ Provides a WebSocket server.
 
 ## Server
 
-> Class: `WebSocket`
+> Class: `WebSocket` (alias of `WebSocketServer`)
 
 ### Notes
 
@@ -19,7 +19,7 @@ Provides a WebSocket server.
 ### Usage
 
 ```js
-const {WebSocket} = require('nest/websocket');
+const { WebSocket } = require('nest/websocket');
 const server = new WebSocket();
 server.on('connected', (client) => {
 	// Say hi to client when connected.
