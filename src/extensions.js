@@ -138,11 +138,11 @@ const apifs = (instance) => {
 
 const requestGet = (instance) => {
 	Request.prototype.get = function (...args) {
-		if (this.body.length < 1) {
+		if (!this.hasJSON) {
 			throw new HTTPError(400, 'expected JSON payload');
 		}
 		try {
-			return validateKeys(this.json, args);
+			return validateKeys(this.data, args);
 		} catch (e) {
 			if (e instanceof ValidationError) {
 				throw new HTTPValidationError(e.errors)
@@ -160,13 +160,14 @@ const requestId = (instance) => {
 	instance.use(requestId);
 };
 
-const requestValidate = () => {
+const requestValidate = (instance) => {
 	Request.prototype.validate = function (rules) {
 		try {
+			console.log(this.data);
 			if (rules instanceof Validator) {
-				return rules.validate(this.json);
+				return rules.validate(this.data);
 			} else {
-				return validateObject(this.json, rules);
+				return validateObject(this.data, rules);
 			}
 		} catch (e) {
 			if (e instanceof ValidationError) {
