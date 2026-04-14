@@ -67,7 +67,7 @@ class Router {
 			this.routes[method.toUpperCase()] = {};
 		}
 		// Transform route to regular expression for future lookups.
-		let exp = `^${route.replace(/\[(\w+)\]/, (p1, p2) => `(?<${p2}>[^/]+)`)}$`;
+		let exp = `^${route.replace(/\[(\w+)\]/g, (p1, p2) => `(?<${p2}>[^/]+)`)}$`;
 		this.routes[method][exp] = callback;
 	}
 
