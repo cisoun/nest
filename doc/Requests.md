@@ -14,6 +14,7 @@ app.post('/user/[id]?lang=fr', (req, res) => {
   const { id } = req.params;
   const { lang } = req.query;
   const { name } = req.json;
+  const { id, lang, name } = req.data;
   return users.update({ id, name });
 })
 ```
@@ -23,6 +24,7 @@ app.post('/user/[id]?lang=fr', (req, res) => {
 | Property  | Description                                                  |
 | --------- | ------------------------------------------------------------ |
 | `body`    | Raw body of the request.                                     |
+| `data`    | Query & path parameters combined with JSON body if provided. |
 | `headers` | Headers of the request.                                      |
 | `json`    | JSON body of the request.                                    |
 | `method`  | Method of the request.                                       |
