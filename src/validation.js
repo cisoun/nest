@@ -57,14 +57,14 @@ const Rules = {
 		}
 	},
 
-	default: (data, key, value, type = String) => {
-		if (data[key] == null) {
-			data[key] = type(value);
+	default: (data, key, value, defaultValue, type = String) => {
+		if (data[key] == null && type instanceof Function) {
+			data[key] = type(defaultValue);
 		}
 	},
 
-	defaultBool: (d, k, v) => Rules.default(d, k, v, Boolean),
-	defaultInt:  (d, k, v) => Rules.default(d, k, v, Number),
+	defaultBool: (d, k, v, dv) => Rules.default(d, k, v, dv, Boolean),
+	defaultInt:  (d, k, v, dv) => Rules.default(d, k, v, dv, Number),
 
 	in: (data, key, value, ...array) => {
 		if (!array.includes(value)) {
@@ -94,13 +94,14 @@ const Rules = {
 	requiredif: (data, key, value, ref = '', condition = '', refValue = '') => {
 		switch (condition) {
 			case 'is':
-				if (!(
-					ref in data &&
-					data[ref].toString() == refValue &&
-					key in data
-				)) return `required if ${ref} is ${refValue}`;
+				if (ref in data && data[ref].toString() == refValue && !(key in data)) {
+					return `required if "${ref}" is "${refValue}"`;
+				}
+				break;
 			default:
-				if (!(key in data)) return `required if ${ref} is set`;
+				if (ref in data && !(key in data)){
+					return `required if "${ref}" is set`;
+				}
 		}
 	}
 };
