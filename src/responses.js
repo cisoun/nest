@@ -21,13 +21,19 @@ class Response extends http.ServerResponse {
 	json (data) {
 		this.setHeader('Content-Type', 'application/json');
 		this.body = JSON.stringify(data);
+		this.end();
 		return this;
 	}
 
 	text (text) {
 		this.setHeader('Content-Type', 'text/plain');
 		this.body = text;
+		this.end();
 		return this;
+	}
+
+	get headers () {
+		return this.getHeaders();
 	}
 
 	get status  () {

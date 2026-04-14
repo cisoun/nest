@@ -84,7 +84,6 @@ class Server {
 				this.onerror(e, req, res);
 			} finally {
 				this.onresponse(req, res);
-				res.end();
 			}
 		});
 	}
@@ -151,8 +150,11 @@ class Server {
 		log.info(`${req.ip} ${res.status} ${req.method} ${req.url}`);
 	}
 
-	run (port, host = 'localhost') {
-		this.server.listen(port, host, () => this.onlisten(host, port));
+	run (port = 0, host = 'localhost') {
+		this.server.listen(port, host, () => {
+			const { port } = this.server.address();
+			this.onlisten(host, port);
+		});
 	}
 
 	use (...e) {
