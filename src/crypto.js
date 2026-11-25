@@ -34,7 +34,7 @@ const toBase64 = (data) => {
 }
 
 const toBasicAuth = (user, pass) => {
-	return toBase64([user, pass].join(':'));
+	return 'Basic ' + toBase64([user, pass].join(':'));
 }
 
 const toSHA1 = (data) => {
