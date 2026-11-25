@@ -28,21 +28,6 @@
 const http  = require('http');
 const https = require('https');
 
-class Response {
-	#response;
-
-	constructor (response, data) {
-		this.#response = response;
-		this.body      = data;
-	}
-
-	get headers () { return this.#response.headers; }
-	get json    () { return JSON.parse(this.body); }
-	get message () { return this.#response.message; }
-	get status  () { return this.#response.statusCode; }
-	get text    () { return this.body.toString('utf8'); }
-}
-
 const basicAuth = (user, pass) => user + ':' + pass;
 
 /**
@@ -61,10 +46,6 @@ const get = async (url, options = {}) => {
 };
 
 const handleData = (options) => options.data || '';
-
-const handleResponse = (response, data) => {
-	return new Response(response, Buffer.concat(data));
-}
 
 /**
  * Do a POST request.
@@ -98,7 +79,7 @@ const request = (options = {}, handler = https) => {
 		handler.request(options, response => {
 			const data = [];
 			response.on('data', (chunk) => data.push(chunk));
-			response.on('end',  ()      => resolve(handleResponse(response, data)));
+			response.on('end',  ()      => resolve(transformResponse(response, data)));
 		})
 		.on('error', error => reject(error))
 		.end(Buffer.from(handleData(options)));
@@ -110,7 +91,7 @@ const transformRequest = (options = {}) => {
 	options.headers                   ??= {};
 	options.headers['Content-Length']   = 0;
 	if (options.data !== undefined && options.data !== null) {
-		if (typeof options.data === 'object') {
+		if (options.data instanceof Object) {
 			options.data   = JSON.stringify(options.data);
 			options.json ??= true; // Make it true by default.
 			if (options.json) {
@@ -119,6 +100,16 @@ const transformRequest = (options = {}) => {
 		}
 		options.headers['Content-Length'] = Buffer.from(options.data).length;
 	}
+}
+
+const transformResponse = (response, data) => {
+	return Object.defineProperties(response, {
+		body:   { get: () => Buffer.concat(data) },
+		json:   { get: () => JSON.parse(response.body) },
+		ok:     { get: () => response.statusCode >= 200 && response.statusCode < 300 },
+		status: { get: () => response.statusCode },
+		text:   { get: () => response.body.toString('utf8') },
+	});
 }
 
 /**
@@ -134,6 +125,5 @@ module.exports = {
 	get,
 	post,
 	request,
-	Response,
 	unsafe,
 };
