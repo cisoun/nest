@@ -13,9 +13,13 @@ app.get('/', (req, res) => {
 app.post('/user/[id]?lang=fr', (req, res) => {
   const { id } = req.params;
   const { lang } = req.query;
-  const { name } = req.json;
-  const { id, lang, name } = req.data;
-  return users.update({ id, name });
+  if (req.hasBody) {
+	  const { name } = req.json;
+  	const { id, lang, name } = req.data;
+	  return res.json(users.update({ id, name }));
+  } else {
+    return res.code(400).json({ error: 'missing body' });
+  }
 })
 
 // Forward requests to /forward to https://example.com/api/test.
@@ -33,6 +37,7 @@ app.post('/forward', async (req, res) => {
 | --------- | ------------------------------------------------------------ |
 | `body`    | Raw body of the request.                                     |
 | `data`    | Query & path parameters combined with JSON body if provided. |
+| `hasBody` | Return `true` if request contains a body, or `false`.        |
 | `headers` | Headers of the request.                                      |
 | `json`    | JSON body of the request.                                    |
 | `method`  | Method of the request.                                       |

@@ -12,6 +12,10 @@ class Request extends http.IncomingMessage {
 	params = {};
 	req    = null;
 
+	get hasBody () {
+		return (this.headers['content-length'] ?? 0) > 0;
+	}
+
 	get hasJSON () {
 		const contentType = this.headers['content-type'];
 		return contentType &&
