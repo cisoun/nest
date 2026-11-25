@@ -12,7 +12,10 @@ const fromBase64 = (data) => {
 }
 
 const fromBasicAuth = (token) => {
-	const data    = toBase64(token);
+	if (!token.startsWith('Basic ')) {
+		throw new CryptoError('not a valid Basic token');
+	}
+	const data    = fromBase64(token.slice(6));
 	const limiter = data.indexOf(':');
 	if (limiter == -1) {
 		throw new CryptoError('token is malformed');
