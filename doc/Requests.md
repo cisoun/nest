@@ -17,6 +17,14 @@ app.post('/user/[id]?lang=fr', (req, res) => {
   const { id, lang, name } = req.data;
   return users.update({ id, name });
 })
+
+// Forward requests to /forward to https://example.com/api/test.
+app.post('/forward', async (req, res) => {
+  req.forward({
+    host: 'example.com',
+    path: '/api/test'
+  });
+});
 ```
 
 ## Properties
@@ -32,3 +40,10 @@ app.post('/user/[id]?lang=fr', (req, res) => {
 | `params`  | Parameters of the path.                                      |
 | `query`   | Parameters of the query.                                     |
 | `res`     | Associated response.                                         |
+
+## Methods
+
+| Method                     | Description                                                  |
+| -------------------------- | ------------------------------------------------------------ |
+| `async forward(modifiers)` | Forward the request (same host/path/headers by default) directly to another API. It uses the [`request`](HTTP.md) method from `nest/http`. Use the `modifiers` parameter to apply modifications to the request such has `host` or `path`. |
+

@@ -3,7 +3,8 @@
  * @module requests
  */
 
-const http = require('node:http');
+const http          = require('node:http');
+const { request }   = require('nest/http');
 const { HTTPError } = require('nest/errors');
 
 class Request extends http.IncomingMessage {
@@ -24,6 +25,32 @@ class Request extends http.IncomingMessage {
 			...this.params,
 			...(this.hasJSON ? this.json : {})
 		};
+	}
+
+	async forward (modifiers = {}) {
+		const host = modifiers.host ?? this.headers['host'];
+
+		const options = {
+			data:    this.body.toString(),
+			headers: {
+				...this.headers,
+				...modifiers.headers
+			},
+			host:    host,
+			method:  modifiers.method ?? this.method,
+			path:    modifiers.path ?? this.url,
+		};
+
+		// Remove "Host" header. Otherwise, can result to an
+		// ERR_TLS_CERT_ALTNAME_INVALID error when using SSL.
+		delete options.headers['host'];
+
+		try {
+			const data = await request(options);
+			this.res.code(data.status).end(data.body);
+		} catch (e) {
+			throw new HTTPError(500, 'could not forward request', { cause: e });
+		}
 	}
 
 	get ip () {
